@@ -137,7 +137,76 @@ function monthExpenses(){return monthTx().filter(x=>x.type==='expense').reduce((
 function totalGoalSaved(){return S.goals.reduce((a,g)=>a+(+g.current||0),0)}
 function outstandingDues(){return S.dues.filter(x=>x.status==='open').reduce((a,d)=>a+(+d.amount||0),0)}
 function firstName(){return (S.profile.name||'').trim().split(/\s+/)[0]||''}
-function greeting(){const h=new Date().getHours();return h>=5&&h<12?'Good morning':h<17?'Good afternoon':h<21?'Good evening':'Good night'}
+const DEENI_QUOTES = [
+  { en: "And He found you lost and guided you. — Surah Ad-Duha (93:7)", bn: "তিনি আপনাকে পথহারা পেয়ে পথ প্রদর্শন করেছেন। — সূরা আদ-দুহা (৯৩:৭)" },
+  { en: "And in the hours before dawn they were seeking forgiveness. — Quran 51:18", bn: "আর রাতের শেষভাগে তারা ক্ষমা প্রার্থনা করত। — সূরা আয-যারিয়াত (৫১:১৮)" },
+  { en: "Tahajjud is the arrow that never misses its target. — Imam Ash-Shafi'i", bn: "তাহাজ্জুদ এমন এক তীর যা কখনো লক্ষ্যভ্রষ্ট হয় না। — ইমাম শাফেয়ী" },
+  { en: "Allah tests those whom He loves. — Prophet Muhammad ﷺ (Tirmidhi)", bn: "আল্লাহ যাকে ভালোবাসেন তাকে পরীক্ষা করেন। — রাসূলুল্লাহ ﷺ (তিরমিযী)" },
+  { en: "Prayer is better than sleep (As-salatu khayrum minan-nawm).", bn: "ঘুম অপেক্ষা নামায উত্তম। — ফজরের আযান" },
+  { en: "O Allah, bless my Ummah in its early mornings. — Prophet Muhammad ﷺ", bn: "হে আল্লাহ! আমার উম্মতকে তার ভোরের কাজে বরকত দান করুন। — রাসূলুল্লাহ ﷺ" },
+  { en: "And whoever relies upon Allah — He is sufficient for him. — Quran 65:3", bn: "যে ব্যক্তি আল্লাহর উপর ভরসা করে, তিনিই তার জন্য যথেষ্ট। — সূরা তালাক (৬৫:৩)" },
+  { en: "Start with Bismillah: Gratitude turns what we have into enough.", bn: "বিসমিল্লাহ দিয়ে শুরু করুন: কৃতজ্ঞতা সামান্যকেও প্রাচুর্যে পরিণত করে।" },
+  { en: "No food is better than that earned by one's own honest hands. — Bukhari", bn: "নিজের হাতের হালাল উপার্জনের চেয়ে উত্তম আহার আর কেউ খায়নি। — বুখারী" },
+  { en: "If you are grateful, I will surely increase you. — Surah Ibrahim (14:7)", bn: "যদি তোমরা কৃতজ্ঞতা স্বীকার কর, তবে অবশ্যই তোমাদের বাড়িয়ে দেব। — সূরা ইব্রাহিম (১৪:৭)" },
+  { en: "Charity does not decrease wealth. — Prophet Muhammad ﷺ (Muslim)", bn: "সদকা কখনো সম্পদ কমায় না। — রাসূলুল্লাহ ﷺ (সহীহ মুসলিম)" },
+  { en: "Allah loves when you do any work, that you do it with excellence (Ihsan).", bn: "আল্লাহ ভালোবাসেন যখন বান্দা কোনো কাজ নিখুঁত ও নিষ্ঠার সাথে করে।" },
+  { en: "Verily, in the remembrance of Allah do hearts find rest. — Quran 13:28", bn: "জেনে রেখো, আল্লাহর স্মরণেই অন্তর প্রশান্তি পায়। — সূরা আর-রাদ (১৩:২৮)" },
+  { en: "The honest and trustworthy merchant will be with the prophets. — Tirmidhi", bn: "সৎ ও আমানতদার ব্যবসায়ী নবী ও শহীদদের সাথে থাকবে। — তিরমিযী" },
+  { en: "Eat and drink, but do not be extravagant. — Surah Al-A'raf (7:31)", bn: "আহার ও পান কর, কিন্তু অপচয় করো না। — সূরা আল-আ’রাফ (৭:৩১)" },
+  { en: "Kind speech and forgiveness are better than charity followed by injury. — Quran 2:263", bn: "উত্তম কথা ও ক্ষমা সেই দানের চেয়ে উত্তম যার পর কষ্ট দেওয়া হয়। — সূরা বাকারা" },
+  { en: "Be mindful of Allah, and you will find Him before you. — Tirmidhi", bn: "আল্লাহর বিধান মেনে চলো, আল্লাহকে তোমার সামনে পাবে। — তিরমিযী" },
+  { en: "True wealth is not abundance of possessions, but richness of the soul. — Bukhari", bn: "প্রকৃত ধনী সম্পদের প্রাচুর্যে নয়, মনের প্রশান্তিতে। — বুখারী" },
+  { en: "Give charity without delay, for it stands in the way of calamity. — Tirmidhi", bn: "দেরি না করে সদকা করো, সদকা বিপদ দূর করে। — তিরমিযী" },
+  { en: "Indeed, with hardship comes ease. — Surah Ash-Sharh (94:6)", bn: "নিশ্চয় কষ্টের সাথেই স্বস্তি রয়েছে। — সূরা আল-ইনশিরাহ (৯৪:৬)" },
+  { en: "Whoever believes in Allah and the Last Day, let him speak good or remain silent. — Bukhari", bn: "যে আল্লাহ ও পরকালে বিশ্বাস করে, সে যেন ভালো কথা বলে নতুবা চুপ থাকে।" },
+  { en: "The best of people are those who are most beneficial to others. — Daraqutni", bn: "মানুষের মধ্যে সর্বোত্তম সে, যে মানুষের সবচেয়ে বেশি উপকারে আসে।" },
+  { en: "Forgive, so that Allah may forgive you. — Surah An-Nur (24:22)", bn: "ক্ষমা করে দাও, তোমরা কি চাও না আল্লাহ তোমাদের ক্ষমা করুন? — সূরা আন-নূর" },
+  { en: "Praise Allah at the end of the day; let your heart rest in His peace.", bn: "দিনের শেষে আল্লাহর প্রশংসা ও শোকর আদায় করুন; অন্তর শান্ত রাখুন।" }
+];
+let quoteHourOffset=0;
+function currentDeeniQuote(){
+  const h=(new Date().getHours()+quoteHourOffset)%DEENI_QUOTES.length;
+  const q=DEENI_QUOTES[h]||DEENI_QUOTES[0];
+  return S.settings.language==='bn'?q.bn:q.en;
+}
+function currentDeeniQuoteShort(){
+  const q=currentDeeniQuote();
+  return q.length>45?q.slice(0,43)+'…':q;
+}
+function quoteHourLabel(){
+  const h=(new Date().getHours()+quoteHourOffset)%24;
+  const period=h>=12?'PM':'AM';
+  const displayH=h%12||12;
+  return `${displayH}:00 ${period}`;
+}
+function greeting(){return currentDeeniQuote()}
+function openDeeniModal(){
+  const q=currentDeeniQuote();
+  modal('Islamic Reflection',`
+    <div style="text-align:center;padding:16px 8px">
+      <div style="font-size:38px;margin-bottom:8px">🕌</div>
+      <small style="font-size:10px;font-weight:900;letter-spacing:1px;text-transform:uppercase;color:var(--green)">Hourly Deeni Quote · ${quoteHourLabel()}</small>
+      <blockquote style="margin:14px 0 16px;font-size:15px;font-weight:800;line-height:1.55;color:var(--text);font-style:italic">
+        "${esc(q)}"
+      </blockquote>
+      <p style="font-size:11px;color:var(--muted);margin:0">This reflection updates dynamically every hour to bring barakah, mindfulness, and peace to your day.</p>
+    </div>
+  `,`<div class="sheet-actions"><button type="button" class="btn primary" onclick="copyDeeniQuote()">📋 Copy Quote</button><button type="button" class="btn" onclick="nextDeeniQuoteManual()">Next Quote ›</button></div>`);
+}
+function copyDeeniQuote(){
+  const q=currentDeeniQuote();
+  if(navigator.clipboard&&navigator.clipboard.writeText){
+    navigator.clipboard.writeText(q).then(()=>toast('Quote copied! 📋')).catch(()=>toast('Quote copied! 📋'));
+  }else{
+    toast('Quote copied! 📋');
+  }
+}
+function nextDeeniQuoteManual(){
+  quoteHourOffset++;
+  closeModal();
+  render();
+  openDeeniModal();
+}
 function setPage(p){activePage=p;$$('.page').forEach(x=>x.classList.toggle('active',x.id===p));$$('.bottomnav button').forEach(x=>x.classList.toggle('active',x.dataset.page===p));render()}
 $$('.bottomnav button').forEach(b=>b.onclick=()=>setPage(b.dataset.page));
 function renderHome(){
@@ -160,6 +229,17 @@ function renderHome(){
   const insight=buildInsight();
 
   $('#home').innerHTML=`
+    <div class="deeni-banner glass" onclick="openDeeniModal()" style="margin-bottom:12px;padding:12px 14px;border-left:4px solid var(--green);cursor:pointer;display:flex;align-items:flex-start;gap:10px">
+      <span style="font-size:22px;line-height:1;margin-top:2px">🕌</span>
+      <div style="flex:1;min-width:0">
+        <div style="display:flex;align-items:center;justify-content:space-between;gap:6px">
+          <small style="font-size:9px;font-weight:900;letter-spacing:0.8px;text-transform:uppercase;color:var(--green)">Hourly Deeni Quote · ${quoteHourLabel()}</small>
+          <small style="font-size:9px;color:var(--muted);font-weight:700">Tap to reflect ›</small>
+        </div>
+        <p style="margin:4px 0 0;font-size:12px;font-weight:700;line-height:1.45;color:var(--text)">${esc(currentDeeniQuote())}</p>
+      </div>
+    </div>
+
     <div class="hero glass">
       <div class="hero-balance-label"><span>◉</span> AVAILABLE BALANCE</div>
       <div class="hero-balance-val">${money(available)}</div>
@@ -301,7 +381,7 @@ function renderSmart(){const forecast=calcForecast(),budgets=adaptiveBudgets(),a
 </div></div>`}
 function renderCalendar(){const y=calDate.getFullYear(),m=calDate.getMonth(),first=new Date(y,m,1).getDay(),days=new Date(y,m+1,0).getDate();let cells='';for(let i=0;i<first;i++)cells+='<div></div>';for(let d=1;d<=days;d++){const ds=`${y}-${String(m+1).padStart(2,'0')}-${String(d).padStart(2,'0')}`,has=S.transactions.some(t=>t.date===ds)||S.notes.some(n=>n.date===ds)||S.markers.some(x=>x.date===ds);cells+=`<button class="cal-day ${ds===today()?'today':''} ${has?'has':''}" onclick="openDay('${ds}')">${d}</button>`}$('#calendar').innerHTML=`<div class="page-title"><h1>Calendar</h1><p>See money, notes and important days together.</p></div><div class="calendar glass"><div class="cal-head"><button class="glass-btn" onclick="shiftCal(-1)">‹</button><b>${calDate.toLocaleDateString([],{month:'long',year:'numeric'})}</b><button class="glass-btn" onclick="shiftCal(1)">›</button></div><div class="cal-grid">${['S','M','T','W','T','F','S'].map(x=>`<div class="empty">${x}</div>`).join('')}${cells}</div></div>`}
 function renderAccount(){const p=S.profile;$('#account').innerHTML=`<div class="page-title"><h1>Account</h1><p>Your profile, automation and data controls.</p></div><div class="setting-card glass"><div class="setting-row"><div><b>${esc(p.name||'Set up your profile')}</b><small>${esc(p.occupation||'Income, budget and preferences')}</small></div><button class="btn" onclick="openProfile()">Edit</button></div><div class="setting-row"><div><b>Monthly financial report</b><small>Detailed income, expenses, category breakdown & budget audit</small></div><button class="btn" onclick="openMonthlyReport()">View</button></div><div class="setting-row"><div><b>Wallets & accounts</b><small>${S.wallets.length} configured · ${money(totalWallets())}</small></div><button class="btn" onclick="openWallets()">Manage</button></div><div class="setting-row"><div><b>Recurring bills & subscriptions</b><small>${S.recurring.length} recurring items</small></div><button class="btn" onclick="openRecurring()">Manage</button></div><div class="setting-row"><div><b>One-tap routines</b><small>${S.routines.length} quick routines</small></div><button class="btn" onclick="openRoutines()">Manage</button></div><div class="setting-row"><div><b>AI & receipt analysis</b><small>${S.settings.aiKey?'API key configured':'Optional API key not configured'}</small></div><button class="btn" onclick="openAISettings()">Settings</button></div><div class="setting-row"><div><b>Language</b><small>${S.settings.language==='bn'?'বাংলা':'English'}</small></div><button class="btn" onclick="toggleLanguage()">Change</button></div><div class="setting-row"><div><b>Backup & restore</b><small>JSON backup · CSV export/import</small></div><button class="btn" onclick="openBackup()">Open</button></div><div class="setting-row"><div><b>Reset app data</b><small>Erase all local Spenzy data from this device</small></div><button class="btn danger" onclick="resetAll()">Reset</button></div></div>`}
-function render(){if(activePage==='home')renderHome();if(activePage==='activity')renderActivity();if(activePage==='smart')renderSmart();if(activePage==='calendar')renderCalendar();if(activePage==='account')renderAccount();applyLanguage()}
+function render(){const sub=$('#headerSub');if(sub)sub.textContent=currentDeeniQuoteShort();if(activePage==='home')renderHome();if(activePage==='activity')renderActivity();if(activePage==='smart')renderSmart();if(activePage==='calendar')renderCalendar();if(activePage==='account')renderAccount();applyLanguage()}
 function modal(title,body,actions=''){const root=$('#modalRoot');root.innerHTML=`<div class="modal open" id="activeModal" onclick="if(event.target===this)closeModal()"><div class="sheet"><div class="sheet-head"><h2>${title}</h2><button type="button" class="glass-btn" onclick="closeModal()">✕</button></div><div class="sheet-body">${body}${actions}</div></div></div>`;document.documentElement.classList.add('in-modal');const sb=root.querySelector('.sheet-body');if(sb)sb.scrollTop=0}
 function closeModal(){const r=$('#modalRoot');r.innerHTML='';document.documentElement.classList.remove('in-modal','keyboard-open')}
 function primaryWalletId(preferredId=''){
@@ -1163,11 +1243,12 @@ function fallbackCopy(text){
 }
 
 // Expose handlers used by inline UI
-Object.assign(window,{quickAddReminder,openMonthlyReport,copyMonthlyReportSummary,fallbackCopy,updateAiDetectionUI,testAI,setPage,setActivityFilter,openMoney,openWallets,openBills,openGoals,openDues,prefillDue,openRoutines,openReceipt,openHabits,quickDaily,openFocus,openSleep,openPrayer,openScreen,openRemember,openWishlist,openNote,openRecurring,openAI,toggleTheme,toast,renderActivity,saveMoney,addWallet,deleteWallet,addBill,toggleBill,deleteBill,addGoal,contributeGoal,deleteGoal,addDue,settleDue,reopenDue,deleteDue,addRoutine,runRoutine,deleteRoutine,addHabit,toggleHabit,deleteHabit,setFocus,toggleFocus,logFocusNow,saveSleep,togglePrayer,saveScreen,addReminder,toggleReminder,deleteReminder,addWish,toggleWish,deleteWish,saveNote,addRecurring,deleteRecurring,previewReceipt,analyzeReceipt,applyBudgets,showAnomalies,showInvestment,toggleRoundup,openProfile,saveProfile,openAISettings,saveAISettings,sendAI,openBackup,exportJSON,exportCSV,importJSON,importCSV,toggleLanguage,resetAll,shiftCal,openDay,saveMarker,openUniversalSearch,closeModal,logLearned,primaryWalletId,totalWallets,walletBalance,getS:()=>S,triggerScanReceipt,processScannedReceipt,parseReceiptText,confirmFastReceipt,selectCategory,highlightMatchingChip,evalMathExpression,onAmountInput,resolveAmountCalc,appendMath,CATEGORIES,getCategoriesForType});
+Object.assign(window,{openDeeniModal,copyDeeniQuote,nextDeeniQuoteManual,currentDeeniQuote,quickAddReminder,openMonthlyReport,copyMonthlyReportSummary,fallbackCopy,updateAiDetectionUI,testAI,setPage,setActivityFilter,openMoney,openWallets,openBills,openGoals,openDues,prefillDue,openRoutines,openReceipt,openHabits,quickDaily,openFocus,openSleep,openPrayer,openScreen,openRemember,openWishlist,openNote,openRecurring,openAI,toggleTheme,toast,renderActivity,saveMoney,addWallet,deleteWallet,addBill,toggleBill,deleteBill,addGoal,contributeGoal,deleteGoal,addDue,settleDue,reopenDue,deleteDue,addRoutine,runRoutine,deleteRoutine,addHabit,toggleHabit,deleteHabit,setFocus,toggleFocus,logFocusNow,saveSleep,togglePrayer,saveScreen,addReminder,toggleReminder,deleteReminder,addWish,toggleWish,deleteWish,saveNote,addRecurring,deleteRecurring,previewReceipt,analyzeReceipt,applyBudgets,showAnomalies,showInvestment,toggleRoundup,openProfile,saveProfile,openAISettings,saveAISettings,sendAI,openBackup,exportJSON,exportCSV,importJSON,importCSV,toggleLanguage,resetAll,shiftCal,openDay,saveMarker,openUniversalSearch,closeModal,logLearned,primaryWalletId,totalWallets,walletBalance,getS:()=>S,triggerScanReceipt,processScannedReceipt,parseReceiptText,confirmFastReceipt,selectCategory,highlightMatchingChip,evalMathExpression,onAmountInput,resolveAmountCalc,appendMath,CATEGORIES,getCategoriesForType});
 
 // Keep mobile WebView layout completely stable when the virtual keyboard opens/closes
 document.addEventListener('focusin',e=>{if(e.target&&e.target.matches('input,textarea,select')){document.documentElement.classList.add('keyboard-open');if(e.target.closest('.modal')){document.documentElement.classList.add('in-modal');window.scrollTo(0,0)}}},{passive:true});
 document.addEventListener('focusout',()=>{setTimeout(()=>{const a=document.activeElement;if(!a||!a.matches?.('input,textarea,select')){document.documentElement.classList.remove('keyboard-open');if(!$('#activeModal'))document.documentElement.classList.remove('in-modal')}},60)},{passive:true});
+setInterval(()=>{const sub=$('#headerSub');if(sub)sub.textContent=currentDeeniQuoteShort();if(activePage==='home'){const p=document.querySelector('.deeni-banner p');if(p)p.textContent=currentDeeniQuote();const lbl=document.querySelector('.deeni-banner small');if(lbl&&lbl.textContent.includes('Hourly'))lbl.textContent=`Hourly Deeni Quote · ${quoteHourLabel()}`}},60000);
 applyTheme();processRecurring();render();
 })();
 </script>

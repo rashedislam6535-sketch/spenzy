@@ -1,0 +1,9 @@
+{
+  "name":"Spenzy",
+  "short_name":"Spenzy",
+  "start_url":"./index.html",
+  "display":"standalone",
+  "background_color":"#fdfbfa",
+  "theme_color":"#ed5047",
+  "icons":[{"src":"spenzy-icon.png","sizes":"512x512","type":"image/png"}]
+}

@@ -1,0 +1,844 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover,user-scalable=no">
+<meta name="theme-color" content="#ed5047">
+<meta name="mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<title>Spenzy</title>
+<link rel="manifest" href="manifest.json">
+<link rel="icon" href="spenzy-icon.png">
+<link rel="apple-touch-icon" href="spenzy-icon.png">
+<style>
+:root{--bg:#fbf9f8;--bg2:#f5eae7;--card:rgba(255,255,255,.84);--card2:rgba(255,255,255,.62);--text:#1e1e14;--muted:#7d7571;--line:rgba(237,80,71,.16);--blue:#ed5047;--blue2:#ff685f;--green:#10b981;--red:#ed5047;--amber:#f59e0b;--purple:#8b5cf6;--shadow:0 16px 45px rgba(237,80,71,.08),inset 0 1px 0 rgba(255,255,255,.95);--safe-top:env(safe-area-inset-top,0px);--safe-bottom:env(safe-area-inset-bottom,0px)}
+html.dark{--bg:#121316;--bg2:#191a1f;--card:rgba(28,29,36,.82);--card2:rgba(38,39,48,.72);--text:#f5f5f7;--muted:#a39e9c;--line:rgba(237,80,71,.22);--shadow:0 22px 60px rgba(0,0,0,.5),inset 0 1px 0 rgba(255,255,255,.07)}
+*{box-sizing:border-box}html,body{margin:0;min-height:100%;font-family:Inter,-apple-system,BlinkMacSystemFont,"SF Pro Display","Segoe UI",sans-serif;background:var(--bg);color:var(--text);-webkit-font-smoothing:antialiased}body{overflow-x:hidden;background:radial-gradient(circle at 12% -10%,rgba(237,80,71,.18),transparent 34%),radial-gradient(circle at 92% 4%,rgba(255,198,191,.25),transparent 32%),linear-gradient(160deg,var(--bg),var(--bg2))}button,input,select,textarea{font:inherit;color:inherit}button{cursor:pointer;-webkit-tap-highlight-color:transparent}.hidden{display:none!important}
+.shell{min-height:100vh;padding-bottom:calc(88px + var(--safe-bottom))}.topbar{position:sticky;top:0;z-index:50;padding:calc(10px + var(--safe-top)) 16px 10px;display:flex;align-items:center;justify-content:space-between;background:linear-gradient(180deg,color-mix(in srgb,var(--bg) 85%,transparent),color-mix(in srgb,var(--bg) 55%,transparent));backdrop-filter:blur(22px) saturate(160%);-webkit-backdrop-filter:blur(22px) saturate(160%)}
+.brand{display:flex;align-items:center;gap:10px;min-width:0}.brand-cube{width:44px;height:44px;padding:4px;border-radius:15px;background:linear-gradient(145deg,#ffffff,rgba(255,210,205,.75));box-shadow:0 10px 24px rgba(237,80,71,.24),inset 1px 1px 0 #fff;transform:perspective(150px) rotateX(6deg) rotateY(-7deg)}.brand-cube img{width:100%;height:100%;border-radius:11px;display:block}.brand b{display:block;font-size:18px;font-weight:900}.brand small{display:block;color:var(--muted);font-size:10px;margin-top:1px}.top-actions{display:flex;gap:8px}.glass-btn{width:40px;height:40px;border-radius:14px;border:1px solid var(--line);background:var(--card);box-shadow:var(--shadow);backdrop-filter:blur(18px);-webkit-backdrop-filter:blur(18px);display:grid;place-items:center;font-weight:900}.glass-btn.primary{background:linear-gradient(145deg,#ff685f,#ed5047);color:#fff;border-color:rgba(255,255,255,.6);box-shadow:0 6px 16px rgba(237,80,71,.35)}
+.content{max-width:760px;margin:0 auto;padding:8px 14px 20px}.page{display:none}.page.active{display:block}.glass{border:1px solid var(--line);background:linear-gradient(145deg,color-mix(in srgb,var(--card) 92%,white 8%),var(--card));box-shadow:var(--shadow);backdrop-filter:blur(22px) saturate(150%);-webkit-backdrop-filter:blur(22px) saturate(150%);border-radius:24px}
+.hero{padding:22px 20px;position:relative;overflow:hidden;background:linear-gradient(135deg,rgba(237,80,71,.10),rgba(255,198,191,.15)),var(--card);border:1px solid var(--line);border-radius:26px}
+.hero:after{content:"";position:absolute;width:200px;height:200px;border-radius:50%;right:-60px;top:-85px;background:radial-gradient(circle,rgba(237,80,71,.22),transparent 70%);pointer-events:none}
+.hero-balance-label{font-size:11px;font-weight:800;letter-spacing:1px;color:var(--muted);text-transform:uppercase;display:flex;align-items:center;gap:6px}
+.hero-balance-val{font-size:36px;font-weight:900;letter-spacing:-0.5px;color:var(--text);margin:6px 0 14px}
+.hero-pills{display:grid;grid-template-columns:1fr 1fr;gap:10px}
+.hero-pill{padding:10px 14px;border-radius:16px;background:var(--card2);border:1px solid var(--line);display:flex;flex-direction:column;gap:3px}
+.hero-pill small{font-size:9px;font-weight:800;text-transform:uppercase;color:var(--muted)}
+.hero-pill b{font-size:15px;font-weight:900}
+.primary-actions{display:grid;grid-template-columns:repeat(2,1fr);gap:10px;margin-top:14px}
+.prime-action{border:1px solid var(--line);background:var(--card);border-radius:20px;padding:14px;box-shadow:var(--shadow);display:flex;align-items:center;gap:12px;text-align:left;cursor:pointer}
+.prime-icon{width:44px;height:44px;border-radius:15px;display:grid;place-items:center;font-size:20px;font-weight:900;flex-shrink:0}
+.prime-action.red .prime-icon{background:linear-gradient(135deg,rgba(237,80,71,.2),rgba(237,80,71,.08));color:#ed5047;border:1px solid rgba(237,80,71,.25)}
+.prime-action.green .prime-icon{background:linear-gradient(135deg,rgba(16,185,129,.2),rgba(16,185,129,.08));color:#10b981;border:1px solid rgba(16,185,129,.25)}
+.prime-action.amber .prime-icon{background:linear-gradient(135deg,rgba(245,158,11,.2),rgba(245,158,11,.08));color:#f59e0b;border:1px solid rgba(245,158,11,.25)}
+.prime-action.purple .prime-icon{background:linear-gradient(135deg,rgba(139,92,246,.2),rgba(139,92,246,.08));color:#8b5cf6;border:1px solid rgba(139,92,246,.25)}
+.prime-action b{display:block;font-size:14px;font-weight:800}
+.prime-action small{display:block;color:var(--muted);font-size:10px;margin-top:2px}
+.quick-tools-row{display:flex;gap:8px;overflow-x:auto;padding:8px 2px;margin-top:10px;scrollbar-width:none}
+.qtool-btn{border:1px solid var(--line);background:var(--card);border-radius:16px;padding:8px 14px;font-size:11px;font-weight:800;white-space:nowrap;display:flex;align-items:center;gap:6px;box-shadow:0 4px 12px rgba(0,0,0,.03);cursor:pointer}
+.qtool-btn span{font-size:14px;color:var(--red)}
+.section{margin-top:14px}.section-head{display:flex;align-items:center;justify-content:space-between;margin:0 4px 8px}.section-head h2{font-size:15px;margin:0;font-weight:800}.section-head span{font-size:10px;color:var(--muted);cursor:pointer}
+.today-grid{display:grid;grid-template-columns:repeat(2,1fr);gap:10px}.today-card{padding:13px;border-radius:20px;cursor:pointer}.today-card-head{display:flex;align-items:center;justify-content:space-between}.today-card h3{margin:0;font-size:13px}.today-card .big{font-size:21px;font-weight:900;margin-top:8px}.today-card small{color:var(--muted);font-size:10px}.mini-progress{height:6px;border-radius:99px;background:rgba(120,150,180,.16);overflow:hidden;margin-top:9px}.mini-progress i{display:block;height:100%;border-radius:99px;background:linear-gradient(90deg,#ff685f,#ed5047)}
+.list-card{padding:14px}.list{display:grid;gap:8px}.empty{padding:18px 8px;text-align:center;color:var(--muted);font-size:11px}.row-item{display:flex;align-items:center;gap:10px;padding:11px;border-radius:16px;background:var(--card2);border:1px solid var(--line)}.row-icon{width:38px;height:38px;border-radius:13px;background:linear-gradient(145deg,rgba(255,255,255,.86),rgba(255,210,205,.4));display:grid;place-items:center;font-weight:900}.row-copy{flex:1;min-width:0}.row-copy b{font-size:12px;display:block;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}.row-copy small{color:var(--muted);font-size:9px}.row-amount{font-size:12px;font-weight:900;white-space:nowrap}.positive{color:var(--green)}.negative{color:var(--red)}
+.insight{padding:14px;background:linear-gradient(135deg,rgba(237,80,71,.92),rgba(217,56,47,.9));color:white;border-color:rgba(255,255,255,.5)}.insight small{color:rgba(255,255,255,.85)}.insight h3{margin:4px 0 2px;font-size:15px}.insight p{font-size:11px;margin:0;line-height:1.45}
+.bottomnav{position:fixed;z-index:60;left:10px;right:10px;bottom:calc(8px + var(--safe-bottom));max-width:720px;margin:auto;display:grid;grid-template-columns:repeat(5,1fr);padding:7px;border:1px solid var(--line);border-radius:24px;background:color-mix(in srgb,var(--card) 85%,transparent);box-shadow:0 20px 50px rgba(237,80,71,.15);backdrop-filter:blur(28px) saturate(170%);-webkit-backdrop-filter:blur(28px) saturate(170%)}.bottomnav button{border:0;background:transparent;color:var(--muted);border-radius:17px;padding:7px 2px;font-size:9px;font-weight:800;display:flex;flex-direction:column;align-items:center;gap:3px}.bottomnav button span{font-size:17px}.bottomnav button.active{color:#fff;background:linear-gradient(145deg,#ff685f,#ed5047);box-shadow:0 8px 18px rgba(237,80,71,.35)}
+.page-title{padding:6px 4px 10px}.page-title h1{margin:0;font-size:25px;font-weight:900}.page-title p{margin:4px 0 0;color:var(--muted);font-size:11px}.toolbar{display:flex;gap:8px;margin-bottom:10px}.search{flex:1;border:1px solid var(--line);background:var(--card);border-radius:17px;padding:11px 13px;outline:none;box-shadow:var(--shadow)}.chiprow{display:flex;gap:7px;overflow:auto;padding:2px 1px 7px;scrollbar-width:none}.chip{border:1px solid var(--line);background:var(--card);border-radius:99px;padding:7px 11px;font-size:10px;font-weight:800;white-space:nowrap}.chip.active{background:linear-gradient(145deg,#ff685f,#ed5047);color:#fff}
+.smart-grid{display:grid;grid-template-columns:repeat(2,1fr);gap:10px}.smart-card{padding:14px;min-height:132px}.smart-card .sicon{font-size:22px;color:var(--red)}.smart-card h3{font-size:13px;margin:8px 0 4px}.smart-card p{font-size:10px;color:var(--muted);margin:0;line-height:1.42}.smart-card button{margin-top:10px;width:100%}
+.calendar{padding:14px}.cal-head{display:flex;align-items:center;justify-content:space-between;margin-bottom:10px}.cal-grid{display:grid;grid-template-columns:repeat(7,1fr);gap:5px}.cal-day{aspect-ratio:1;border-radius:12px;border:1px solid var(--line);background:var(--card2);display:flex;align-items:center;justify-content:center;font-size:10px;position:relative}.cal-day.today{outline:2px solid #ed5047}.cal-day.has:after{content:"";position:absolute;bottom:5px;width:5px;height:5px;border-radius:50%;background:var(--green)}
+.setting-card{padding:14px}.setting-row{display:flex;align-items:center;gap:10px;padding:12px 2px;border-bottom:1px solid var(--line)}.setting-row:last-child{border-bottom:0}.setting-row>div:first-child{flex:1}.setting-row b{font-size:12px}.setting-row small{font-size:9px;color:var(--muted);display:block;margin-top:2px}.btn{border:1px solid var(--line);border-radius:14px;padding:10px 12px;background:var(--card);font-weight:800;font-size:11px}.btn.primary{background:linear-gradient(145deg,#ff685f,#ed5047);color:#fff;border-color:rgba(255,255,255,.55);box-shadow:0 6px 16px rgba(237,80,71,.3)}.btn.green{background:linear-gradient(145deg,#3ed496,#10b981);color:#fff}.btn.danger{color:var(--red)}.full{width:100%}
+.modal{position:fixed;inset:0;z-index:100;display:none;align-items:flex-end;justify-content:center;background:rgba(18,19,22,.45);backdrop-filter:blur(8px);-webkit-backdrop-filter:blur(8px)}.modal.open{display:flex}.sheet{width:min(720px,100%);max-height:88vh;overflow:auto;border-radius:30px 30px 0 0;padding:14px 14px calc(18px + var(--safe-bottom));background:linear-gradient(160deg,color-mix(in srgb,var(--bg) 90%,white 10%),color-mix(in srgb,var(--bg2) 94%,transparent));border:1px solid var(--line);box-shadow:0 -22px 70px rgba(237,80,71,.18)}.sheet-head{display:flex;align-items:center;justify-content:space-between;margin-bottom:12px}.sheet-head h2{font-size:17px;margin:0;font-weight:900}.form{display:grid;gap:10px}.form.two{grid-template-columns:1fr 1fr}.field{display:grid;gap:5px}.field label{font-size:10px;color:var(--muted);font-weight:800}.field input,.field select,.field textarea{width:100%;border:1px solid var(--line);background:var(--card);border-radius:14px;padding:11px 12px;outline:none;font-size:15px}.field textarea{min-height:78px;resize:vertical}.field input:focus,.field select:focus,.field textarea:focus{border-color:#ed5047;box-shadow:0 0 0 3px rgba(237,80,71,.15)}.sheet-actions{display:flex;gap:8px;margin-top:12px}.sheet-actions .btn{flex:1}.tabs{display:flex;gap:6px;margin-bottom:10px}.tabs button{flex:1}.switch{width:46px;height:27px;border-radius:99px;background:rgba(120,140,160,.25);padding:3px;display:flex;align-items:center}.switch i{width:21px;height:21px;border-radius:50%;background:#fff;box-shadow:0 3px 8px rgba(0,0,0,.2);transition:.2s}.switch.on{background:#ed5047}.switch.on i{transform:translateX(19px)}
+.toast{position:fixed;z-index:130;left:50%;bottom:calc(95px + var(--safe-bottom));transform:translate(-50%,20px);opacity:0;pointer-events:none;background:rgba(30,30,20,.95);color:#fff;padding:9px 15px;border-radius:14px;font-size:11px;font-weight:800;border:1px solid rgba(255,255,255,.1);box-shadow:0 10px 30px rgba(0,0,0,.3);transition:.22s}.toast.show{opacity:1;transform:translate(-50%,0)}.chat{height:330px;overflow:auto;display:flex;flex-direction:column;gap:8px;padding:4px}.msg{max-width:84%;padding:10px 12px;border-radius:16px;font-size:11px;line-height:1.45}.msg.user{align-self:flex-end;background:#ed5047;color:#fff;border-bottom-right-radius:5px}.msg.ai{align-self:flex-start;background:var(--card);border:1px solid var(--line);border-bottom-left-radius:5px}.receipt-preview{max-width:100%;max-height:220px;border-radius:18px;object-fit:contain;border:1px solid var(--line);display:none}
+.cat-chips{display:flex;gap:6px;overflow-x:auto;padding:2px 2px 8px;scrollbar-width:none;-webkit-overflow-scrolling:touch}
+.cat-chip{display:inline-flex;align-items:center;gap:5px;border:1px solid var(--line);background:var(--card);border-radius:12px;padding:7px 11px;font-size:11px;font-weight:800;white-space:nowrap;cursor:pointer;color:inherit}
+.cat-chip.active{background:linear-gradient(145deg,#ff685f,#ed5047);color:#fff;border-color:#ed5047;box-shadow:0 4px 12px rgba(237,80,71,.35)}
+.calc-badge{font-size:12px;font-weight:900;color:var(--green);background:rgba(16,185,129,.12);padding:3px 8px;border-radius:8px;border:1px solid rgba(16,185,129,.25)}
+.calc-equal-btn{position:absolute;right:8px;top:50%;transform:translateY(-50%);background:var(--red);color:#fff;border:none;border-radius:10px;padding:6px 12px;font-size:13px;font-weight:900;cursor:pointer}
+.scan-viewfinder{position:relative;width:100%;max-height:220px;border-radius:16px;overflow:hidden;background:#000;display:flex;align-items:center;justify-content:center;margin-bottom:12px;border:1px solid var(--line)}
+.scan-viewfinder img{width:100%;max-height:220px;object-fit:contain}
+.scan-laser{position:absolute;left:0;right:0;height:3px;background:linear-gradient(90deg,transparent,#ed5047,#ff857d,#ed5047,transparent);box-shadow:0 0 12px #ed5047;animation:laserMove 1.5s infinite ease-in-out!important}
+@keyframes laserMove{0%{top:4%}50%{top:94%}100%{top:4%}}
+@media(max-width:520px){.glass,.topbar,.bottomnav{backdrop-filter:blur(12px) saturate(135%);-webkit-backdrop-filter:blur(12px) saturate(135%)}.primary-actions{grid-template-columns:1fr 1fr;gap:8px}.prime-action{padding:11px 10px;border-radius:17px}.prime-icon{width:38px;height:38px;font-size:18px}.hero-balance-val{font-size:30px}.smart-grid{grid-template-columns:1fr 1fr}.form.two{grid-template-columns:1fr}.content{padding-left:12px;padding-right:12px}}
+@media(min-width:761px){.sheet{border-radius:30px;margin-bottom:22px}.modal{align-items:center}.bottomnav{bottom:18px}}
+
+/* ===== v2.1 Android WebView performance / keyboard stability ===== */
+html,body{scroll-behavior:auto!important}
+*,*::before,*::after{animation:none!important;transition:none!important}
+@media(max-width:900px){
+  .topbar,.glass,.glass-btn,.bottomnav{backdrop-filter:none!important;-webkit-backdrop-filter:none!important}
+  .modal{backdrop-filter:none!important;-webkit-backdrop-filter:none!important;background:rgba(6,16,31,.18)!important}
+  .topbar{background:color-mix(in srgb,var(--bg) 96%,white 4%)!important}
+  .bottomnav{background:color-mix(in srgb,var(--card) 96%,var(--bg) 4%)!important;box-shadow:0 10px 28px rgba(237,80,71,.12)!important}
+  .glass{box-shadow:0 8px 26px rgba(237,80,71,.08),inset 0 1px 0 rgba(255,255,255,.65)!important}
+  html.dark .glass{box-shadow:0 8px 24px rgba(0,0,0,.28),inset 0 1px 0 rgba(255,255,255,.05)!important}
+  html.keyboard-open .bottomnav{display:none!important}
+  html.keyboard-open .topbar{position:static!important}
+  html.keyboard-open .hero:after{display:none!important}
+  html.keyboard-open .sheet{max-height:none!important;min-height:0!important;border-radius:20px 20px 0 0!important}
+}
+
+@media(max-width:900px){
+  .prime-action,.row-icon,.hero-pill,.today-card,.smart-card,.search{box-shadow:none!important}
+  body{background:linear-gradient(160deg,var(--bg),var(--bg2))!important}
+}
+</style>
+</head>
+<body>
+<div class="shell">
+<header class="topbar">
+  <div class="brand"><div class="brand-cube"><img src="spenzy-icon.png" alt="Spenzy"></div><div><b>Spenzy</b><small id="headerSub">Your life & money, together.</small></div></div>
+  <div class="top-actions"><button class="glass-btn" onclick="openUniversalSearch()">⌕</button><button class="glass-btn primary" onclick="openAI()">✦</button><button class="glass-btn" onclick="toggleTheme()">◐</button></div>
+</header>
+<main class="content">
+<section id="home" class="page active"></section>
+<section id="activity" class="page"></section>
+<section id="smart" class="page"></section>
+<section id="calendar" class="page"></section>
+<section id="account" class="page"></section>
+</main>
+</div>
+<nav class="bottomnav">
+<button data-page="home" class="active"><span>⌂</span>Home</button>
+<button data-page="activity"><span>▥</span>Activity</button>
+<button data-page="smart"><span>✦</span>Smart</button>
+<button data-page="calendar"><span>▦</span>Calendar</button>
+<button data-page="account"><span>◉</span>Account</button>
+</nav>
+<div id="modalRoot"></div><div class="toast" id="toast"></div>
+<script>
+(()=>{'use strict';
+const KEY='spenzy_ultimate_v2';
+const AI_PROVIDERS={
+  openai:{label:'OpenAI',model:'gpt-5.6-luna',endpoint:'https://api.openai.com/v1/responses',kind:'responses'},
+  anthropic:{label:'Anthropic',model:'claude-3-5-haiku-latest',endpoint:'https://api.anthropic.com/v1/messages',kind:'anthropic'},
+  gemini:{label:'Google Gemini',model:'gemini-2.5-flash',endpoint:'https://generativelanguage.googleapis.com/v1beta/models/{model}:generateContent',kind:'gemini'},
+  groq:{label:'Groq',model:'llama-3.3-70b-versatile',endpoint:'https://api.groq.com/openai/v1/chat/completions',kind:'openai'},
+  openrouter:{label:'OpenRouter',model:'openai/gpt-4o-mini',endpoint:'https://openrouter.ai/api/v1/chat/completions',kind:'openai'},
+  deepseek:{label:'DeepSeek',model:'deepseek-chat',endpoint:'https://api.deepseek.com/chat/completions',kind:'openai'},
+  xai:{label:'xAI',model:'grok-3-mini',endpoint:'https://api.x.ai/v1/chat/completions',kind:'openai'}
+};
+const $=s=>document.querySelector(s), $$=s=>[...document.querySelectorAll(s)];
+const today=()=>{const d=new Date();return `${d.getFullYear()}-${String(d.getMonth()+1).padStart(2,'0')}-${String(d.getDate()).padStart(2,'0')}`};
+const uid=()=>Date.now().toString(36)+Math.random().toString(36).slice(2,7);
+const money=n=>'৳'+Number(n||0).toLocaleString('en-BD',{maximumFractionDigits:2});
+const esc=s=>String(s??'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
+const defaultState=()=>({profile:{name:'',age:'',occupation:'',income:0,budget:0,emergencyFund:0,debt:0,risk:'Balanced'},settings:{theme:'light',language:'en',notifications:true,roundup:false,roundupStep:10,aiKey:'',aiProvider:'auto',aiModel:'',rememberKey:true},wallets:[],transactions:[],bills:[],goals:[],dues:[],routines:[],habits:[],daily:{},notes:[],reminders:[],wishlist:[],recurring:[],roundupSaved:0,chat:[],markers:[],categoryBudgets:{},receiptDraft:null});
+let S=load(),activePage='home',activityFilter='all',searchQuery='',calDate=new Date();
+function load(){try{return {...defaultState(),...JSON.parse(localStorage.getItem(KEY)||'{}')}}catch{return defaultState()}}
+function save(){localStorage.setItem(KEY,JSON.stringify(S))}
+function toast(t){const e=$('#toast');e.textContent=t;e.classList.add('show');clearTimeout(toast.t);toast.t=setTimeout(()=>e.classList.remove('show'),1700)}
+function walletBalance(id){const w=S.wallets.find(x=>x.id===id);if(!w)return 0;let b=Number(w.opening||0);S.transactions.forEach(t=>{if(t.walletId!==id)return;if(t.type==='income')b+=+t.amount;if(['expense','saving','goal','lent','borrowed-reserve'].includes(t.type))b-=+t.amount;if(t.type==='due-return')b+=+t.amount});return b}
+function totalWallets(){return S.wallets.reduce((a,w)=>a+walletBalance(w.id),0)}
+function monthTx(){const m=today().slice(0,7);return S.transactions.filter(x=>String(x.date||'').startsWith(m))}
+function monthSum(type){return monthTx().filter(x=>x.type===type).reduce((a,x)=>a+(+x.amount||0),0)}
+function monthExpenses(){return monthTx().filter(x=>x.type==='expense').reduce((a,x)=>a+(+x.amount||0),0)}
+function totalGoalSaved(){return S.goals.reduce((a,g)=>a+(+g.current||0),0)}
+function outstandingDues(){return S.dues.filter(x=>x.status==='open').reduce((a,d)=>a+(+d.amount||0),0)}
+function firstName(){return (S.profile.name||'').trim().split(/\s+/)[0]||''}
+function greeting(){const h=new Date().getHours();return h>=5&&h<12?'Good morning':h<17?'Good afternoon':h<21?'Good evening':'Good night'}
+function setPage(p){activePage=p;$$('.page').forEach(x=>x.classList.toggle('active',x.id===p));$$('.bottomnav button').forEach(x=>x.classList.toggle('active',x.dataset.page===p));render()}
+$$('.bottomnav button').forEach(b=>b.onclick=()=>setPage(b.dataset.page));
+function renderHome(){
+  const name=firstName(),spent=monthExpenses(),inc=monthSum('income'),saved=monthSum('saving')+monthSum('goal')+S.roundupSaved,available=totalWallets();
+  const unpaidBills=S.bills.filter(b=>!b.paid).length;
+  const openDuesCount=S.dues.filter(d=>d.status==='open').length;
+  const d=S.daily[today()]||{};
+  const habits=S.habits.length,habitDone=S.habits.filter(h=>d.habits?.[h.id]).length;
+  const water=+d.water||0,focus=+d.focus||0;
+  const recent=[...S.transactions].sort((a,b)=>String(b.createdAt||b.date).localeCompare(String(a.createdAt||a.date))).slice(0,5);
+  const insight=buildInsight();
+
+  $('#home').innerHTML=`
+    <div class="hero glass">
+      <div class="hero-balance-label"><span>◉</span> AVAILABLE BALANCE</div>
+      <div class="hero-balance-val">${money(available)}</div>
+      <div class="hero-pills">
+        <div class="hero-pill">
+          <small style="color:var(--green)">＋ THIS MONTH INCOME</small>
+          <b style="color:var(--green)">${money(inc)}</b>
+        </div>
+        <div class="hero-pill">
+          <small style="color:var(--red)">− THIS MONTH SPENT</small>
+          <b style="color:var(--red)">${money(spent)}</b>
+        </div>
+      </div>
+    </div>
+
+    <div class="primary-actions">
+      <div class="prime-action red" onclick="openMoney('expense')">
+        <span class="prime-icon">−</span>
+        <div><b>Expense</b><small>Log spending</small></div>
+      </div>
+      <div class="prime-action green" onclick="openMoney('income')">
+        <span class="prime-icon">＋</span>
+        <div><b>Income</b><small>Add money</small></div>
+      </div>
+      <div class="prime-action amber" onclick="openBills()">
+        <span class="prime-icon">▤</span>
+        <div><b>Bills</b><small>${unpaidBills?unpaidBills+' unpaid':'All paid ✓'}</small></div>
+      </div>
+      <div class="prime-action purple" onclick="openDues()">
+        <span class="prime-icon">↔</span>
+        <div><b>Dues</b><small>${openDuesCount?openDuesCount+' open':'No dues'}</small></div>
+      </div>
+    </div>
+
+    <div class="quick-tools-row">
+      <div class="qtool-btn" onclick="triggerScanReceipt()" style="border-color:rgba(237,80,71,.4);color:var(--red);font-weight:900"><span>📷</span>Scan Bill</div>
+      <div class="qtool-btn" onclick="openWishlist()"><span>♡</span>Wishlist (${S.wishlist.filter(w=>!w.bought).length})</div>
+      <div class="qtool-btn" onclick="openGoals()"><span>◎</span>Goals (${S.goals.length})</div>
+      <div class="qtool-btn" onclick="openWallets()"><span>▣</span>Wallets (${S.wallets.length})</div>
+      <div class="qtool-btn" onclick="openRoutines()"><span>✓</span>Routines</div>
+      <div class="qtool-btn" onclick="openHabits()"><span>☑</span>Habits (${habitDone}/${habits})</div>
+      <div class="qtool-btn" onclick="openNote()"><span>✎</span>Notes</div>
+      <div class="qtool-btn" onclick="openAI()"><span>✦</span>AI</div>
+    </div>
+
+    ${learnedQuickHtml()}
+
+    <div class="section"><div class="section-head"><h2>Today</h2><span>${new Date().toLocaleDateString([], {weekday:'long',day:'numeric',month:'short'})}</span></div>
+    <div class="today-grid">
+      <div class="today-card glass" onclick="openHabits()"><div class="today-card-head"><h3>Habits</h3><span>☑</span></div><div class="big">${habitDone}/${habits}</div><small>${habits?'completed today':'Tap to add habit'}</small><div class="mini-progress"><i style="width:${habits?habitDone/habits*100:0}%"></i></div></div>
+      <div class="today-card glass" onclick="quickDaily('water')"><div class="today-card-head"><h3>Water</h3><span>◒</span></div><div class="big">${water.toFixed(1)}L</div><small>Tap to add 0.25L</small><div class="mini-progress"><i style="width:${Math.min(100,water/3*100)}%"></i></div></div>
+      <div class="today-card glass" onclick="openFocus()"><div class="today-card-head"><h3>Focus</h3><span>◷</span></div><div class="big">${focus}m</div><small>Deep work session</small><div class="mini-progress"><i style="width:${Math.min(100,focus/120*100)}%"></i></div></div>
+      <div class="today-card glass" onclick="openGoals()"><div class="today-card-head"><h3>Goals</h3><span>◎</span></div><div class="big">${S.goals.length}</div><small>${S.goals.length?money(totalGoalSaved())+' saved':'Tap to add goal'}</small><div class="mini-progress"><i style="width:${goalOverallPct()}%"></i></div></div>
+    </div></div>
+
+    <div class="section"><div class="insight glass"><small style="color:var(--primary);font-weight:800">SPENZY SMART</small><h3>${esc(insight.title)}</h3><p>${esc(insight.text)}</p></div></div>
+
+    <div class="section"><div class="section-head"><h2>Recent activity</h2><span onclick="setPage('activity')">View all</span></div><div class="list-card glass"><div class="list">${recent.length?recent.map(txRow).join(''):'<div class="empty">No activity yet. Tap Expense or Bill above to log.</div>'}</div></div></div>`}
+function txRow(t){const isIn=t.type==='income'||t.type==='due-return';const label=t.note||t.category||t.type;return `<div class="row-item"><div class="row-icon">${isIn?'＋':'−'}</div><div class="row-copy"><b>${esc(label)}</b><small>${esc(t.date||'')} · ${esc(walletName(t.walletId))}</small></div><div class="row-amount ${isIn?'positive':'negative'}">${isIn?'+':'−'}${money(t.amount)}</div></div>`}
+function walletName(id){return S.wallets.find(w=>w.id===id)?.name||'No wallet'}
+function goalOverallPct(){const target=S.goals.reduce((a,g)=>a+(+g.target||0),0);return target?Math.min(100,totalGoalSaved()/target*100):0}
+function buildInsight(){const spent=monthExpenses(),income=monthSum('income')||+S.profile.income||0,budget=+S.profile.budget||income;if(!S.transactions.length)return {title:'Start with one small entry',text:'Add an expense, income, habit or goal. Spenzy will build useful insights as you use it.'};if(budget&&spent>budget*.8)return {title:'Budget is getting tight',text:`You've used ${Math.round(spent/budget*100)}% of your monthly budget. Check Smart for an adaptive plan.`};const anomalies=findAnomalies();if(anomalies.length)return {title:'Unusual spending detected',text:`${anomalies[0].category} looks higher than your normal pattern.`};return {title:'You are building momentum',text:'Keep logging consistently — forecasts and recommendations improve with your real data.'}}
+function activityFiltered(){const q=searchQuery.toLowerCase();return [...S.transactions].sort((a,b)=>String(b.date).localeCompare(String(a.date))).filter(t=>(activityFilter==='all'||t.type===activityFilter)&&(!q||JSON.stringify(t).toLowerCase().includes(q)))}
+function updateActivityList(){const list=$('#activityList');if(!list)return;const filtered=activityFiltered();list.innerHTML=filtered.length?filtered.map(txRow).join(''):'<div class="empty">No matching activity.</div>'}
+function renderActivity(){const filtered=activityFiltered();$('#activity').innerHTML=`<div class="page-title"><h1>Activity</h1><p>One timeline for money, habits and monthly progress.</p></div>${monthlyVisualHtml()}<div class="toolbar" style="margin-top:10px"><input class="search" id="actSearch" placeholder="Search activity" value="${esc(searchQuery)}"><button class="glass-btn primary" onclick="openMoney('expense')">＋</button></div><div class="chiprow">${['all','expense','income','saving','goal','lent'].map(f=>`<button class="chip ${activityFilter===f?'active':''}" onclick="setActivityFilter('${f}')">${f[0].toUpperCase()+f.slice(1)}</button>`).join('')}</div><div class="list-card glass"><div class="list" id="activityList">${filtered.length?filtered.map(txRow).join(''):'<div class="empty">No matching activity.</div>'}</div></div>`;const input=$('#actSearch');if(input)input.oninput=e=>{searchQuery=e.target.value;updateActivityList()}}
+function setActivityFilter(f){activityFilter=f;renderActivity()}
+function monthlyVisualHtml(){const now=new Date(),months=[];for(let i=5;i>=0;i--){const d=new Date(now.getFullYear(),now.getMonth()-i,1),key=`${d.getFullYear()}-${String(d.getMonth()+1).padStart(2,'0')}`,spent=S.transactions.filter(t=>t.type==='expense'&&String(t.date).startsWith(key)).reduce((a,x)=>a+(+x.amount||0),0);months.push({label:d.toLocaleDateString([],{month:'short'}),spent})}const max=Math.max(1,...months.map(x=>x.spent));const cats={};monthTx().filter(t=>t.type==='expense').forEach(t=>cats[t.category||'Other']=(cats[t.category||'Other']||0)+(+t.amount||0));const top=Object.entries(cats).sort((a,b)=>b[1]-a[1]).slice(0,3);return `<div class="glass list-card"><div class="section-head"><h2>6-month spending</h2><span>${money(monthExpenses())} this month</span></div><div style="display:grid;grid-template-columns:repeat(6,1fr);gap:7px;align-items:end;height:118px">${months.map(x=>`<div style="display:flex;flex-direction:column;align-items:center;justify-content:end;height:100%;gap:5px"><div style="width:70%;height:${Math.max(4,x.spent/max*82)}px;border-radius:8px 8px 5px 5px;background:linear-gradient(180deg,#57adff,#237ff0);box-shadow:0 8px 15px rgba(35,127,240,.18)"></div><small style="font-size:8px;color:var(--muted)">${x.label}</small></div>`).join('')}</div>${top.length?`<div class="chiprow" style="margin-top:8px">${top.map(([k,v])=>`<span class="chip">${esc(k)} · ${money(v)}</span>`).join('')}</div>`:''}</div>`}
+function renderSmart(){const forecast=calcForecast(),budgets=adaptiveBudgets(),anom=findAnomalies(),invest=investmentText();$('#smart').innerHTML=`<div class="page-title"><h1>Smart</h1><p>Forecasts, adaptive budgets and AI guidance from your own data.</p></div><div class="smart-grid">
+<div class="smart-card glass"><div class="sicon">⌁</div><h3>Cash-flow forecast</h3><p>${esc(forecast)}</p><button class="btn primary" onclick="toast('Forecast refreshed')">Refresh</button></div>
+<div class="smart-card glass"><div class="sicon">◫</div><h3>Adaptive budget</h3><p>${budgets.length?esc(budgets.slice(0,2).map(x=>x.category+' '+money(x.limit)).join(' · ')):'Log spending to generate category budgets.'}</p><button class="btn" onclick="applyBudgets()">Apply suggestion</button></div>
+<div class="smart-card glass"><div class="sicon">⚠</div><h3>Anomaly watch</h3><p>${anom.length?esc(anom[0].category+' · '+money(anom[0].amount)):'No unusual expense pattern detected yet.'}</p><button class="btn" onclick="showAnomalies()">Review</button></div>
+<div class="smart-card glass"><div class="sicon">◈</div><h3>Investment guidance</h3><p>${esc(invest)}</p><button class="btn" onclick="showInvestment()">View guidance</button></div>
+<div class="smart-card glass"><div class="sicon">↗</div><h3>Round-up savings</h3><p>${S.settings.roundup?'Enabled · '+money(S.roundupSaved)+' collected':'Automatically save the change from everyday expenses.'}</p><button class="btn" onclick="toggleRoundup()">${S.settings.roundup?'Turn off':'Turn on'}</button></div>
+<div class="smart-card glass"><div class="sicon">✦</div><h3>Spenzy AI</h3><p>Ask about money, habits, goals and your recent activity.</p><button class="btn primary" onclick="openAI()">Ask Spenzy AI</button></div>
+</div></div>`}
+function renderCalendar(){const y=calDate.getFullYear(),m=calDate.getMonth(),first=new Date(y,m,1).getDay(),days=new Date(y,m+1,0).getDate();let cells='';for(let i=0;i<first;i++)cells+='<div></div>';for(let d=1;d<=days;d++){const ds=`${y}-${String(m+1).padStart(2,'0')}-${String(d).padStart(2,'0')}`,has=S.transactions.some(t=>t.date===ds)||S.notes.some(n=>n.date===ds)||S.markers.some(x=>x.date===ds);cells+=`<button class="cal-day ${ds===today()?'today':''} ${has?'has':''}" onclick="openDay('${ds}')">${d}</button>`}$('#calendar').innerHTML=`<div class="page-title"><h1>Calendar</h1><p>See money, notes and important days together.</p></div><div class="calendar glass"><div class="cal-head"><button class="glass-btn" onclick="shiftCal(-1)">‹</button><b>${calDate.toLocaleDateString([],{month:'long',year:'numeric'})}</b><button class="glass-btn" onclick="shiftCal(1)">›</button></div><div class="cal-grid">${['S','M','T','W','T','F','S'].map(x=>`<div class="empty">${x}</div>`).join('')}${cells}</div></div>`}
+function renderAccount(){const p=S.profile;$('#account').innerHTML=`<div class="page-title"><h1>Account</h1><p>Your profile, automation and data controls.</p></div><div class="setting-card glass"><div class="setting-row"><div><b>${esc(p.name||'Set up your profile')}</b><small>${esc(p.occupation||'Income, budget and preferences')}</small></div><button class="btn" onclick="openProfile()">Edit</button></div><div class="setting-row"><div><b>Wallets & accounts</b><small>${S.wallets.length} configured · ${money(totalWallets())}</small></div><button class="btn" onclick="openWallets()">Manage</button></div><div class="setting-row"><div><b>Recurring bills & subscriptions</b><small>${S.recurring.length} recurring items</small></div><button class="btn" onclick="openRecurring()">Manage</button></div><div class="setting-row"><div><b>One-tap routines</b><small>${S.routines.length} quick routines</small></div><button class="btn" onclick="openRoutines()">Manage</button></div><div class="setting-row"><div><b>AI & receipt analysis</b><small>${S.settings.aiKey?'API key configured':'Optional API key not configured'}</small></div><button class="btn" onclick="openAISettings()">Settings</button></div><div class="setting-row"><div><b>Language</b><small>${S.settings.language==='bn'?'বাংলা':'English'}</small></div><button class="btn" onclick="toggleLanguage()">Change</button></div><div class="setting-row"><div><b>Backup & restore</b><small>JSON backup · CSV export/import</small></div><button class="btn" onclick="openBackup()">Open</button></div><div class="setting-row"><div><b>Reset app data</b><small>Erase all local Spenzy data from this device</small></div><button class="btn danger" onclick="resetAll()">Reset</button></div></div>`}
+function render(){if(activePage==='home')renderHome();if(activePage==='activity')renderActivity();if(activePage==='smart')renderSmart();if(activePage==='calendar')renderCalendar();if(activePage==='account')renderAccount();applyLanguage()}
+function modal(title,body,actions=''){const root=$('#modalRoot');root.innerHTML=`<div class="modal open" id="activeModal" onclick="if(event.target===this)closeModal()"><div class="sheet"><div class="sheet-head"><h2>${title}</h2><button class="glass-btn" onclick="closeModal()">✕</button></div>${body}${actions}</div></div>`}
+function closeModal(){const r=$('#modalRoot');r.innerHTML=''}
+function primaryWalletId(preferredId=''){
+  if(preferredId&&S.wallets.some(w=>w.id===preferredId))return preferredId;
+  if(S.wallets.length)return S.wallets[0].id;
+  const defW={id:uid(),name:'Main Account',type:'Cash',opening:0};
+  S.wallets.push(defW);save();return defW.id;
+}
+function walletOptions(selected=''){
+  const list=S.wallets.length?S.wallets:[{id:primaryWalletId(),name:'Main Account',type:'Cash'}];
+  const active=selected||(list[0]?list[0].id:'');
+  return list.map(w=>`<option value="${w.id}" ${w.id===active?'selected':''}>${esc(w.name)}</option>`).join('');
+}
+
+function autoCategory(text){const q=String(text||'').toLowerCase();const rules=[['food',['food','lunch','dinner','breakfast','restaurant','meal','tea','coffee']],['Transport',['bus','uber','ride','fuel','cng','rickshaw','transport']],['Shopping',['shop','shirt','shoe','daraz','shopping']],['Utilities',['electric','internet','wifi','gas','water bill','mobile recharge']],['Health',['doctor','medicine','hospital','pharmacy']],['Education',['book','course','tuition','university']],['Entertainment',['movie','game','netflix','spotify']]];for(const [cat,keys] of rules)if(keys.some(k=>q.includes(k)))return cat;return ''}
+function learnedExpenses(){const cutoff=Date.now()-45*86400000,map={};S.transactions.filter(t=>t.type==='expense'&&new Date((t.date||today())+'T00:00:00').getTime()>=cutoff).forEach(t=>{const key=(t.note||t.category||'').trim();if(!key)return;const k=key.toLowerCase();map[k]??={label:key,category:t.category,walletId:t.walletId,amounts:[],count:0};map[k].amounts.push(+t.amount||0);map[k].count++});return Object.values(map).filter(x=>x.count>=2).map(x=>{const a=x.amounts.sort((a,b)=>a-b);x.amount=a[Math.floor(a.length/2)]||0;return x}).sort((a,b)=>b.count-a.count).slice(0,4)}
+function learnedQuickHtml(){const a=learnedExpenses();if(!a.length)return '';return `<div class="section"><div class="section-head"><h2>Smart quick expenses</h2><span>Learned from your routine</span></div><div class="chiprow">${a.map((x,i)=>`<button class="chip" onclick="logLearned(${i})">${esc(x.label)} · ${money(x.amount)}</button>`).join('')}</div></div>`}
+function logLearned(i){const x=learnedExpenses()[i];if(!x)return;if(!confirm(`Log ${x.label} for ${money(x.amount)}?`))return;const wid=x.walletId||primaryWalletId();S.transactions.push({id:uid(),type:'expense',amount:x.amount,date:today(),category:x.category||'Quick expense',walletId:wid,note:x.label,createdAt:new Date().toISOString()});save();render();toast('Quick expense logged')}
+const CATEGORIES = {
+  expense: [
+    { name: 'Transport', icon: '🚗' },
+    { name: 'Medicine', icon: '💊' },
+    { name: 'Food', icon: '🍔' },
+    { name: 'Groceries', icon: '🛒' },
+    { name: 'Shopping', icon: '🛍️' },
+    { name: 'Utilities', icon: '💡' },
+    { name: 'Education', icon: '📚' },
+    { name: 'Entertainment', icon: '🎬' },
+    { name: 'Personal', icon: '✂️' },
+    { name: 'Other', icon: '✦' }
+  ],
+  income: [
+    { name: 'Salary', icon: '💼' },
+    { name: 'Freelance', icon: '📈' },
+    { name: 'Business', icon: '🏢' },
+    { name: 'Gift', icon: '🎁' },
+    { name: 'Bonus', icon: '💰' },
+    { name: 'Other', icon: '✦' }
+  ],
+  saving: [
+    { name: 'Bank', icon: '🏦' },
+    { name: 'Goal', icon: '🎯' },
+    { name: 'Investment', icon: '💎' },
+    { name: 'Gold', icon: '🪙' },
+    { name: 'General', icon: '✦' }
+  ]
+};
+
+function getCategoriesForType(type) {
+  return CATEGORIES[type] || CATEGORIES.expense;
+}
+
+function selectCategory(catName) {
+  const inp = $('#mCategory');
+  if (inp) {
+    inp.value = catName;
+    highlightMatchingChip(catName);
+  }
+}
+
+function highlightMatchingChip(val) {
+  const q = String(val || '').trim().toLowerCase();
+  $$('#catChips .cat-chip').forEach(c => {
+    const name = (c.dataset.cat || '').toLowerCase();
+    c.classList.toggle('active', q === name);
+  });
+}
+
+function evalMathExpression(raw) {
+  if (typeof raw === 'number') return raw;
+  let str = String(raw || '').trim();
+  if (!str) return 0;
+  str = str.replace(/×/g, '*').replace(/÷/g, '/').replace(/−/g, '-');
+  str = str.replace(/[\+\-\*\/]+$/, '').trim();
+  if (!str) return 0;
+  if (!/^[0-9\.\+\-\*\/\(\)\s]+$/.test(str)) {
+    const num = parseFloat(str.replace(/[^0-9.]/g, ''));
+    return isNaN(num) ? 0 : num;
+  }
+  try {
+    const res = Function('"use strict"; return (' + str + ')')();
+    if (typeof res === 'number' && !isNaN(res) && isFinite(res)) {
+      return Math.round(res * 100) / 100;
+    }
+  } catch (e) {}
+  return null;
+}
+
+function onAmountInput(val) {
+  const hasOp = /[\+\-\*\/]/.test(val);
+  const badge = $('#calcBadge');
+  const eqBtn = $('#calcEqBtn');
+  if (!hasOp) {
+    if (badge?.style) badge.style.display = 'none';
+    if (eqBtn?.style) eqBtn.style.display = 'none';
+    return;
+  }
+  const computed = evalMathExpression(val);
+  if (computed !== null && computed >= 0) {
+    if (badge) {
+      badge.textContent = `= ৳${computed}`;
+      if (badge.style) badge.style.display = 'inline-block';
+    }
+    if (eqBtn?.style) eqBtn.style.display = 'block';
+  } else {
+    if (badge?.style) badge.style.display = 'none';
+    if (eqBtn?.style) eqBtn.style.display = 'none';
+  }
+}
+
+function resolveAmountCalc() {
+  const inp = $('#mAmount');
+  if (!inp) return;
+  const val = String(inp.value || '').trim();
+  if (/[\+\-\*\/]/.test(val)) {
+    const computed = evalMathExpression(val);
+    if (computed !== null && computed >= 0) {
+      inp.value = computed;
+    }
+  }
+  const badge = $('#calcBadge');
+  if (badge?.style) badge.style.display = 'none';
+  const eqBtn = $('#calcEqBtn');
+  if (eqBtn?.style) eqBtn.style.display = 'none';
+}
+
+function appendMath(op) {
+  const inp = $('#mAmount');
+  if (!inp) return;
+  let cur = inp.value.trim();
+  if (op.startsWith('+') && !isNaN(+op)) {
+    if (!cur || cur === '0') cur = op.slice(1);
+    else cur = cur + op;
+  } else {
+    if (!cur) cur = '0';
+    cur = cur.replace(/[\+\-\*\/]+$/, '') + op;
+  }
+  inp.value = cur;
+  onAmountInput(cur);
+  inp.focus();
+}
+
+function openMoney(type='expense', prefill={}){
+  const pAmount = prefill.amount !== undefined ? prefill.amount : '';
+  const pCat = prefill.category || (type === 'expense' ? 'Transport' : type === 'income' ? 'Salary' : 'Bank');
+  const pNote = prefill.note || '';
+  const cats = getCategoriesForType(type);
+
+  modal(type==='income'?'Add Income':type==='saving'?'Add Savings':'Add Expense',`
+    <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:12px">
+      <div class="tabs" style="margin-bottom:0;flex:1">
+        <button class="btn ${type==='expense'?'primary':''}" onclick="openMoney('expense')">− Expense</button>
+        <button class="btn ${type==='income'?'primary':''}" onclick="openMoney('income')">＋ Income</button>
+        <button class="btn ${type==='saving'?'primary':''}" onclick="openMoney('saving')">↗ Savings</button>
+      </div>
+      ${type==='expense'?`
+        <button class="btn" onclick="triggerScanReceipt()" style="margin-left:8px;font-weight:900;border-color:var(--red);color:var(--red);display:flex;align-items:center;gap:5px;padding:9px 12px">
+          <span style="font-size:14px">📷</span> Scan
+        </button>
+      `:''}
+    </div>
+
+    <div class="field" style="margin-bottom:10px">
+      <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:4px">
+        <label style="font-size:11px;font-weight:800;text-transform:uppercase">Amount (৳)</label>
+        <span id="calcBadge" class="calc-badge" style="display:none">= ৳0</span>
+      </div>
+      <div style="position:relative">
+        <input id="mAmount" type="text" inputmode="text" placeholder="0 or 10+5+6+20" value="${pAmount}" style="font-size:24px;font-weight:900;padding:11px 48px 11px 12px;color:var(--red)" oninput="onAmountInput(this.value)" onblur="resolveAmountCalc()" onkeydown="if(event.key==='Enter'){resolveAmountCalc();event.preventDefault()}">
+        <button type="button" id="calcEqBtn" class="calc-equal-btn" onclick="resolveAmountCalc()" style="display:none">=</button>
+      </div>
+      <div style="display:flex;gap:5px;overflow-x:auto;padding:4px 1px 2px;scrollbar-width:none">
+        <button type="button" class="chip" onclick="appendMath('+10')" style="font-size:10px;padding:4px 9px">+10</button>
+        <button type="button" class="chip" onclick="appendMath('+50')" style="font-size:10px;padding:4px 9px">+50</button>
+        <button type="button" class="chip" onclick="appendMath('+100')" style="font-size:10px;padding:4px 9px">+100</button>
+        <button type="button" class="chip" onclick="appendMath('+500')" style="font-size:10px;padding:4px 9px">+500</button>
+        <button type="button" class="chip" onclick="appendMath('+')" style="font-size:12px;font-weight:900;padding:4px 11px">＋</button>
+        <button type="button" class="chip" onclick="appendMath('-')" style="font-size:12px;font-weight:900;padding:4px 11px">−</button>
+        <button type="button" class="chip" onclick="appendMath('*')" style="font-size:12px;font-weight:900;padding:4px 11px">×</button>
+      </div>
+    </div>
+
+    <div class="field" style="margin-bottom:10px">
+      <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:4px">
+        <label style="font-size:11px;font-weight:800;text-transform:uppercase">Category</label>
+        <small style="color:var(--muted);font-size:10px">1-tap options</small>
+      </div>
+      <div class="cat-chips" id="catChips">
+        ${cats.map(c=>`
+          <button type="button" class="cat-chip ${pCat.toLowerCase()===c.name.toLowerCase()?'active':''}" data-cat="${c.name}" onclick="selectCategory('${c.name}')">
+            <span>${c.icon}</span> ${c.name}
+          </button>
+        `).join('')}
+      </div>
+      <input id="mCategory" list="catDatalist" value="${esc(pCat)}" placeholder="Type or select category" oninput="highlightMatchingChip(this.value)" style="margin-top:6px">
+      <datalist id="catDatalist">
+        ${cats.map(c=>`<option value="${c.name}">`).join('')}
+      </datalist>
+    </div>
+
+    <div class="form two">
+      <div class="field"><label>Date</label><input id="mDate" type="date" value="${today()}"></div>
+      <div class="field"><label>Wallet</label><select id="mWallet">${walletOptions()}</select></div>
+      <div class="field" style="grid-column:1/-1"><label>Note</label><input id="mNote" value="${esc(pNote)}" placeholder="Optional description / merchant"></div>
+    </div>
+  `,`<div class="sheet-actions"><button class="btn" onclick="closeModal()">Cancel</button><button class="btn primary" onclick="saveMoney('${type}')">Save</button></div>`);
+  if(pAmount) onAmountInput(String(pAmount));
+}
+
+function saveMoney(type){
+  resolveAmountCalc();
+  const raw = $('#mAmount')?.value;
+  const amount = evalMathExpression(raw) || +raw;
+  if(!(amount>0))return toast('Enter an amount');
+  const wid=$('#mWallet')?.value||primaryWalletId();
+  const cat=$('#mCategory')?.value.trim()||autoCategory($('#mNote')?.value.trim())||type;
+  const t={id:uid(),type,amount,date:$('#mDate')?.value||today(),category:cat,walletId:wid,note:$('#mNote')?.value.trim()||'',createdAt:new Date().toISOString()};
+  S.transactions.push(t);
+  if(type==='expense'&&S.settings.roundup){
+    const step=+S.settings.roundupStep||10,ru=(step-(amount%step))%step;
+    if(ru){
+      S.roundupSaved+=ru;
+      S.transactions.push({id:uid(),type:'saving',amount:ru,date:t.date,category:'Round-up',walletId:wid,note:'Automatic round-up',createdAt:new Date().toISOString()});
+    }
+  }
+  save();
+  closeModal();
+  render();
+  toast(`${type==='expense'?'Expense':type==='income'?'Income':'Savings'} of ${money(amount)} saved`);
+}
+function openWallets(){modal('Wallets & accounts',`<div class="list">${S.wallets.length?S.wallets.map(w=>`<div class="row-item"><div class="row-icon">▣</div><div class="row-copy"><b>${esc(w.name)}</b><small>${esc(w.type||'Account')}</small></div><div class="row-amount">${money(walletBalance(w.id))}</div><button class="btn danger" onclick="deleteWallet('${w.id}')">×</button></div>`).join(''):'<div class="empty">No wallets yet.</div>'}</div><div class="form two" style="margin-top:12px"><div class="field"><label>Name</label><input id="wName" placeholder="bKash, Bank, Cash"></div><div class="field"><label>Type</label><select id="wType"><option>Cash</option><option>bKash</option><option>Nagad</option><option>Bank</option><option>Card</option><option>Other</option></select></div><div class="field"><label>Opening balance</label><input id="wOpening" type="number" inputmode="decimal" value="0"></div></div>`,`<div class="sheet-actions"><button class="btn primary" onclick="addWallet()">Add wallet</button></div>`)}
+function addWallet(){const n=$('#wName').value.trim();if(!n)return toast('Enter wallet name');S.wallets.push({id:uid(),name:n,type:$('#wType').value,opening:+$('#wOpening').value||0});save();openWallets();render()}function deleteWallet(id){if(!confirm('Delete this wallet?'))return;S.wallets=S.wallets.filter(x=>x.id!==id);save();openWallets();render()}
+let billTab='unpaid';
+function openBills(tab='unpaid'){
+  billTab=tab;
+  const unpaid=S.bills.filter(b=>!b.paid);
+  const paid=S.bills.filter(b=>b.paid);
+  const unpaidSum=unpaid.reduce((a,b)=>a+(+b.amount||0),0);
+  const paidSum=paid.reduce((a,b)=>a+(+b.amount||0),0);
+  const list=billTab==='unpaid'?unpaid:paid;
+
+  modal('Bills & Payments',`
+    <div style="display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-bottom:12px">
+      <div class="hero-pill" style="border-color:rgba(237,80,71,.3)">
+        <small style="color:var(--red)">UNPAID TOTAL</small>
+        <b style="color:var(--red)">${money(unpaidSum)}</b>
+      </div>
+      <div class="hero-pill" style="border-color:rgba(16,185,129,.3)">
+        <small style="color:var(--green)">PAID TOTAL</small>
+        <b style="color:var(--green)">${money(paidSum)}</b>
+      </div>
+    </div>
+    <div class="tabs" style="margin-bottom:12px">
+      <button class="btn ${billTab==='unpaid'?'primary':''}" onclick="openBills('unpaid')">Unpaid (${unpaid.length})</button>
+      <button class="btn ${billTab==='paid'?'primary':''}" onclick="openBills('paid')">Paid (${paid.length})</button>
+    </div>
+    <div class="list">
+      ${list.length?list.map(b=>`
+        <div class="row-item" style="padding:12px">
+          <div class="row-icon" style="${b.paid?'background:rgba(16,185,129,.15);color:var(--green)':'background:rgba(237,80,71,.15);color:var(--red)'}">▤</div>
+          <div class="row-copy">
+            <b style="font-size:13px">${esc(b.name)}</b>
+            <small>${b.due?'Due: '+esc(b.due):'No due date'} · <span style="font-weight:700;color:${b.paid?'var(--green)':'var(--red)'}">${b.paid?'✓ Paid':'⏳ Unpaid'}</span></small>
+          </div>
+          <div class="row-amount ${b.paid?'negative':''}" style="font-size:14px">${money(b.amount)}</div>
+          ${!b.paid
+            ? `<button class="btn green" onclick="toggleBill('${b.id}')" title="Deduct from balance and mark paid" style="font-weight:900;padding:8px 14px">Pay</button>`
+            : `<button class="btn" onclick="toggleBill('${b.id}')" title="Restore money and mark unpaid" style="font-weight:900">↺ Undo</button>`
+          }
+          <button class="btn danger" onclick="deleteBill('${b.id}')">×</button>
+        </div>
+      `).join(''):`<div class="empty">${billTab==='unpaid'?'🎉 All bills paid! No pending bills.':'No paid bills yet.'}</div>`}
+    </div>
+    <div class="form two" style="margin-top:14px;padding-top:12px;border-top:1px solid var(--line)">
+      <div class="field"><label>Bill name</label><input id="bName" placeholder="Electricity, WiFi"></div>
+      <div class="field"><label>Amount (৳)</label><input id="bAmount" type="number" inputmode="decimal" placeholder="0"></div>
+      <div class="field"><label>Due date</label><input id="bDue" type="date"></div>
+      <div class="field"><label>Pay from</label><select id="bWallet">${walletOptions()}</select></div>
+    </div>
+  `,`<div class="sheet-actions"><button class="btn primary" onclick="addBill()">＋ Add bill</button></div>`)}
+function addBill(){const n=$('#bName').value.trim(),a=+$('#bAmount').value,w=$('#bWallet')?.value||primaryWalletId();if(!n||!(a>0))return toast('Add bill details');S.bills.push({id:uid(),name:n,amount:a,due:$('#bDue').value,walletId:w,paid:false});save();openBills(billTab);render();toast('Bill added')}
+function toggleBill(id){const b=S.bills.find(x=>x.id===id);if(!b)return;if(!b.paid){const wid=b.walletId||primaryWalletId();b.walletId=wid;const txId=uid();b.txId=txId;b.paid=true;S.transactions.push({id:txId,type:'expense',amount:b.amount,date:today(),category:'Bills',walletId:wid,note:`Bill: ${b.name}`,createdAt:new Date().toISOString()});toast(`Bill paid: ${money(b.amount)} deducted from balance`)}else{b.paid=false;if(b.txId){S.transactions=S.transactions.filter(t=>t.id!==b.txId);delete b.txId}toast(`Bill marked unpaid: ${money(b.amount)} restored to balance`)}save();openBills(billTab);render()}
+function deleteBill(id){const b=S.bills.find(x=>x.id===id);if(!b||!confirm(`Delete bill "${b.name}"?`))return;if(b.txId)S.transactions=S.transactions.filter(t=>t.id!==b.txId);S.bills=S.bills.filter(x=>x.id!==id);save();openBills(billTab);render();toast('Bill deleted')}
+function openGoals(){modal('Savings goals',`<div class="list">${S.goals.length?S.goals.map(g=>`<div class="row-item"><div class="row-icon">◎</div><div class="row-copy"><b>${esc(g.name)}</b><small>${money(g.current)} of ${money(g.target)}${g.deadline?' · '+g.deadline:''}${g.walletId?' · '+esc(walletName(g.walletId)):''}</small></div><button class="btn green" onclick="contributeGoal('${g.id}')" title="Contribute from wallet">＋</button><button class="btn danger" onclick="deleteGoal('${g.id}')">×</button></div>`).join(''):'<div class="empty">No goals yet.</div>'}</div><div class="form two" style="margin-top:12px"><div class="field"><label>Goal</label><input id="gName" placeholder="Emergency fund"></div><div class="field"><label>Target</label><input id="gTarget" type="number" inputmode="decimal" placeholder="0"></div><div class="field"><label>Deadline</label><input id="gDeadline" type="date"></div><div class="field"><label>Wallet</label><select id="gWallet">${walletOptions()}</select></div></div>`,`<div class="sheet-actions"><button class="btn primary" onclick="addGoal()">Create goal</button></div>`)}
+function addGoal(){const n=$('#gName').value.trim(),t=+$('#gTarget').value,w=$('#gWallet')?.value||primaryWalletId();if(!n||!(t>0))return toast('Add goal details');S.goals.push({id:uid(),name:n,target:t,current:0,walletId:w,deadline:$('#gDeadline').value});save();openGoals();render();toast('Goal created')}
+function contributeGoal(id){const g=S.goals.find(x=>x.id===id);if(!g)return;const wid=g.walletId||primaryWalletId();const v=prompt(`Contribution amount to "${g.name}" (deducted from ${walletName(wid)}):`);const a=+v;if(!(a>0))return;g.current+=a;S.transactions.push({id:uid(),type:'goal',amount:a,date:today(),category:g.name,walletId:wid,note:`Goal contribution: ${g.name}`,createdAt:new Date().toISOString()});save();openGoals();render();toast(`${money(a)} saved to goal (deducted from balance)`)}
+function deleteGoal(id){const g=S.goals.find(x=>x.id===id);if(!g||!confirm(`Delete goal "${g.name}"?`))return;S.goals=S.goals.filter(x=>x.id!==id);save();openGoals();render();toast('Goal deleted')}
+let duesTab='borrowed';
+function openDues(tab='borrowed'){
+  duesTab=tab;
+  const list=S.dues.filter(d=>d.kind===duesTab);
+  const isBorrowed=duesTab==='borrowed';
+
+  modal('Dues & Debts',`
+    <div class="tabs" style="margin-bottom:12px">
+      <button class="btn ${duesTab==='borrowed'?'primary':''}" onclick="openDues('borrowed')">I Owe (Borrowed)</button>
+      <button class="btn ${duesTab==='lent'?'primary':''}" onclick="openDues('lent')">Owed to Me (Lent)</button>
+    </div>
+    <div class="list">
+      ${list.length?list.map(d=>{
+        const isSettled=d.status==='paid'||d.status==='received';
+        return `
+          <div class="row-item" style="padding:12px">
+            <div class="row-icon" style="${isSettled?'background:rgba(16,185,129,.15);color:var(--green)':'background:rgba(237,80,71,.15);color:var(--red)'}">↔</div>
+            <div class="row-copy">
+              <b style="font-size:13px">${esc(d.person)}</b>
+              <small>${d.due?'Due: '+esc(d.due)+' · ':''}<span style="font-weight:700;color:${isSettled?'var(--green)':'var(--red)'}">${isSettled?(isBorrowed?'✓ Repaid':'✓ Received'):(isBorrowed?'⏳ Unpaid debt':'⏳ Pending')}</span></small>
+            </div>
+            <div class="row-amount ${isBorrowed&&isSettled?'negative':(!isBorrowed&&!isSettled?'negative':'positive')}" style="font-size:14px">${money(d.amount)}</div>
+            ${!isSettled
+              ? `<button class="btn green" onclick="settleDue('${d.id}')" style="font-weight:900;padding:8px 12px">${isBorrowed?'Pay back':'Received'}</button>`
+              : `<button class="btn" onclick="reopenDue('${d.id}')" title="Reopen as unpaid">↺ Undo</button>`
+            }
+            <button class="btn danger" onclick="deleteDue('${d.id}')">×</button>
+          </div>
+        `;
+      }).join(''):`<div class="empty">No ${duesTab==='borrowed'?'borrowed debts':'lent dues'} recorded.</div>`}
+    </div>
+    <div class="form two" style="margin-top:14px;padding-top:12px;border-top:1px solid var(--line)">
+      <div class="field"><label>Person name</label><input id="dPerson" placeholder="Name"></div>
+      <div class="field"><label>Amount (৳)</label><input id="dAmount" type="number" inputmode="decimal" placeholder="0"></div>
+      <div class="field"><label>Due date</label><input id="dDate" type="date"></div>
+      <div class="field"><label>Wallet</label><select id="dWallet">${walletOptions()}</select></div>
+    </div>
+  `,`<div class="sheet-actions"><button class="btn primary" onclick="addDue('${duesTab}')">＋ Save ${duesTab==='borrowed'?'debt':'due'}</button></div>`)}
+function prefillDue(k){openDues(k)}
+function addDue(kindOverride){const k=kindOverride||duesTab||'borrowed',a=+$('#dAmount').value,p=$('#dPerson').value.trim(),w=$('#dWallet')?.value||primaryWalletId();if(!p||!(a>0))return toast('Enter person name and amount');const dId=uid(),dueObj={id:dId,kind:k,person:p,amount:a,due:$('#dDate').value,walletId:w,status:'open'};if(k==='lent'){const initTxId=uid();dueObj.initTxId=initTxId;S.transactions.push({id:initTxId,type:'lent',amount:a,date:today(),category:'I Lent',walletId:w,note:`Lent to ${p}`,createdAt:new Date().toISOString()})}S.dues.push(dueObj);save();openDues(k);render();toast(k==='lent'?`Lent ${money(a)} recorded`:`Debt of ${money(a)} recorded as unpaid`)}
+function settleDue(id){const d=S.dues.find(x=>x.id===id);if(!d)return;const wid=d.walletId||primaryWalletId();d.walletId=wid;if(d.kind==='borrowed'){d.status='paid';const txId=uid();d.settleTxId=txId;S.transactions.push({id:txId,type:'expense',amount:d.amount,date:today(),category:'Due Paid',walletId:wid,note:`Repaid debt to ${d.person}`,createdAt:new Date().toISOString()});toast(`Debt repaid: ${money(d.amount)} deducted from balance`)}else{d.status='received';const txId=uid();d.settleTxId=txId;S.transactions.push({id:txId,type:'due-return',amount:d.amount,date:today(),category:'Received due',walletId:wid,note:`Received from ${d.person}`,createdAt:new Date().toISOString()});toast(`Due received: ${money(d.amount)} added to balance`)}save();openDues(duesTab);render()}
+function reopenDue(id){const d=S.dues.find(x=>x.id===id);if(!d)return;if(d.settleTxId){S.transactions=S.transactions.filter(t=>t.id!==d.settleTxId);delete d.settleTxId}d.status='open';save();openDues(duesTab);render();toast('Reopened as unpaid')}
+function deleteDue(id){const d=S.dues.find(x=>x.id===id);if(!d||!confirm(`Delete due with ${d.person}?`))return;if(d.initTxId)S.transactions=S.transactions.filter(t=>t.id!==d.initTxId);if(d.settleTxId)S.transactions=S.transactions.filter(t=>t.id!==d.settleTxId);S.dues=S.dues.filter(x=>x.id!==id);save();openDues(duesTab);render();toast('Due deleted')}
+function openRoutines(){modal('One-tap routines',`<div class="list">${S.routines.length?S.routines.map(r=>`<div class="row-item"><div class="row-icon">✓</div><div class="row-copy"><b>${esc(r.name)}</b><small>${money(r.amount)} · ${esc(r.category)}</small></div><button class="btn green" onclick="runRoutine('${r.id}')">Log</button><button class="btn danger" onclick="deleteRoutine('${r.id}')">×</button></div>`).join(''):'<div class="empty">Create quick routines like Office lunch or University transport.</div>'}</div><div class="form two" style="margin-top:12px"><div class="field"><label>Name</label><input id="rName" placeholder="Office lunch"></div><div class="field"><label>Amount</label><input id="rAmount" type="number"></div><div class="field"><label>Category</label><input id="rCategory" placeholder="Food"></div><div class="field"><label>Wallet</label><select id="rWallet">${walletOptions()}</select></div></div>`,`<div class="sheet-actions"><button class="btn primary" onclick="addRoutine()">Add routine</button></div>`)}
+function addRoutine(){const n=$('#rName').value.trim(),a=+$('#rAmount').value;if(!n||!(a>0))return toast('Add routine details');S.routines.push({id:uid(),name:n,amount:a,category:$('#rCategory').value.trim()||'Routine',walletId:$('#rWallet').value});save();openRoutines()}function runRoutine(id){const r=S.routines.find(x=>x.id===id);if(!r)return;if(!confirm(`Log ${r.name} for ${money(r.amount)}?`))return;const wid=r.walletId||primaryWalletId();S.transactions.push({id:uid(),type:'expense',amount:r.amount,date:today(),category:r.category,walletId:wid,note:r.name,createdAt:new Date().toISOString()});save();closeModal();render();toast('Routine logged')}function deleteRoutine(id){S.routines=S.routines.filter(x=>x.id!==id);save();openRoutines()}
+function openHabits(){const d=S.daily[today()]||{};modal('Habits',`<div class="list">${S.habits.length?S.habits.map(h=>`<div class="row-item"><div class="row-icon">${d.habits?.[h.id]?'✓':'○'}</div><div class="row-copy"><b>${esc(h.name)}</b><small>${d.habits?.[h.id]?'Done today':'Tap to complete'}</small></div><button class="btn ${d.habits?.[h.id]?'green':''}" onclick="toggleHabit('${h.id}')">${d.habits?.[h.id]?'Done':'Check'}</button><button class="btn danger" onclick="deleteHabit('${h.id}')">×</button></div>`).join(''):'<div class="empty">No habits yet.</div>'}</div><div class="field" style="margin-top:12px"><label>New habit</label><input id="hName" placeholder="Read 20 minutes"></div>`,`<div class="sheet-actions"><button class="btn primary" onclick="addHabit()">Add habit</button></div>`)}
+function addHabit(){const n=$('#hName').value.trim();if(!n)return;S.habits.push({id:uid(),name:n});save();openHabits();render()}function toggleHabit(id){S.daily[today()]||={};S.daily[today()].habits||={};S.daily[today()].habits[id]=!S.daily[today()].habits[id];save();openHabits();render()}function deleteHabit(id){S.habits=S.habits.filter(x=>x.id!==id);save();openHabits();render()}
+function quickDaily(k){S.daily[today()]||={};if(k==='water'){S.daily[today()].water=(+S.daily[today()].water||0)+.25;save();render();toast('+0.25L water')}}
+let focusTimer=null,focusLeft=25*60;function openFocus(){modal('Focus timer',`<div style="font-size:50px;font-weight:900;text-align:center;padding:24px" id="focusDisplay">25:00</div><div class="chiprow" style="justify-content:center"><button class="chip" onclick="setFocus(15)">15m</button><button class="chip active" onclick="setFocus(25)">25m</button><button class="chip" onclick="setFocus(50)">50m</button></div>`,`<div class="sheet-actions"><button class="btn primary" id="focusBtn" onclick="toggleFocus()">Start</button><button class="btn green" onclick="logFocusNow()">Log completed</button></div>`)}function setFocus(m){focusLeft=m*60;if($('#focusDisplay'))$('#focusDisplay').textContent=`${String(m).padStart(2,'0')}:00`}function toggleFocus(){if(focusTimer){clearInterval(focusTimer);focusTimer=null;$('#focusBtn').textContent='Start';return}focusTimer=setInterval(()=>{focusLeft=Math.max(0,focusLeft-1);const m=Math.floor(focusLeft/60),s=focusLeft%60;if($('#focusDisplay'))$('#focusDisplay').textContent=`${String(m).padStart(2,'0')}:${String(s).padStart(2,'0')}`;if(!focusLeft){clearInterval(focusTimer);focusTimer=null;toast('Focus session complete')}},1000);$('#focusBtn').textContent='Pause'}function logFocusNow(){const mins=Math.max(1,Math.round((25*60-focusLeft)/60)||25);S.daily[today()]||={};S.daily[today()].focus=(+S.daily[today()].focus||0)+mins;save();closeModal();render();toast(`${mins}m focus logged`)}
+function openSleep(){const d=S.daily[today()]||{};modal('Sleep',`<div class="form two"><div class="field"><label>Bed time</label><input id="slBed" type="time" value="${d.sleepBed||''}"></div><div class="field"><label>Wake time</label><input id="slWake" type="time" value="${d.sleepWake||''}"></div></div>`,`<div class="sheet-actions"><button class="btn primary" onclick="saveSleep()">Save sleep</button></div>`)}function saveSleep(){S.daily[today()]||={};S.daily[today()].sleepBed=$('#slBed').value;S.daily[today()].sleepWake=$('#slWake').value;save();closeModal();render();toast('Sleep saved')}
+function openPrayer(){const d=S.daily[today()]||{},p=d.prayers||{};const names=['Fajr','Dhuhr','Asr','Maghrib','Isha'];modal('Prayer tracker',`<div class="list">${names.map(n=>`<div class="row-item"><div class="row-icon">${p[n]?'✓':'○'}</div><div class="row-copy"><b>${n}</b></div><button class="btn ${p[n]?'green':''}" onclick="togglePrayer('${n}')">${p[n]?'Done':'Mark'}</button></div>`).join('')}</div>`)}function togglePrayer(n){S.daily[today()]||={};S.daily[today()].prayers||={};S.daily[today()].prayers[n]=!S.daily[today()].prayers[n];save();openPrayer();render()}
+
+function openScreen(){const d=S.daily[today()]||{};modal('Screen time',`<div class="field"><label>Screen time today (hours)</label><input id="screenHours" type="number" step="0.1" inputmode="decimal" value="${d.screen||''}" placeholder="0"></div>`,`<div class="sheet-actions"><button class="btn primary" onclick="saveScreen()">Save screen time</button></div>`)}
+function saveScreen(){S.daily[today()]||={};S.daily[today()].screen=+$('#screenHours').value||0;save();closeModal();render();toast('Screen time saved')}
+function openRemember(){modal('Remember',`<div class="list">${S.reminders.length?S.reminders.map(r=>`<div class="row-item"><div class="row-icon">${r.done?'✓':'!'}</div><div class="row-copy"><b style="${r.done?'text-decoration:line-through;opacity:.6':''}">${esc(r.text)}</b><small>${r.done?'Completed':'Keep in mind'}</small></div><button class="btn" onclick="toggleReminder('${r.id}')">${r.done?'↺':'✓'}</button><button class="btn danger" onclick="deleteReminder('${r.id}')">×</button></div>`).join(''):'<div class="empty">Nothing to remember yet.</div>'}</div><div class="field" style="margin-top:12px"><label>Add reminder</label><input id="remText" placeholder="Something important..."></div>`,`<div class="sheet-actions"><button class="btn primary" onclick="addReminder()">Add reminder</button></div>`)}
+function addReminder(){const t=$('#remText').value.trim();if(!t)return;S.reminders.push({id:uid(),text:t,done:false,date:today()});save();openRemember()}function toggleReminder(id){const r=S.reminders.find(x=>x.id===id);if(r)r.done=!r.done;save();openRemember();render()}function deleteReminder(id){S.reminders=S.reminders.filter(x=>x.id!==id);save();openRemember()}
+let wishTab='planned';
+function openWishlist(tab='planned'){
+  wishTab=tab;
+  const planned=S.wishlist.filter(w=>!w.bought);
+  const bought=S.wishlist.filter(w=>w.bought);
+  const list=wishTab==='planned'?planned:bought;
+
+  modal('Wishlist',`
+    <div class="tabs" style="margin-bottom:12px">
+      <button class="btn ${wishTab==='planned'?'primary':''}" onclick="openWishlist('planned')">Planned (${planned.length})</button>
+      <button class="btn ${wishTab==='bought'?'primary':''}" onclick="openWishlist('bought')">Purchased (${bought.length})</button>
+    </div>
+    <div class="list">
+      ${list.length?list.map(w=>`
+        <div class="row-item" style="padding:12px">
+          <div class="row-icon" style="${w.bought?'background:rgba(16,185,129,.15);color:var(--green)':'background:rgba(237,80,71,.15);color:var(--red)'}">♡</div>
+          <div class="row-copy">
+            <b style="font-size:13px">${esc(w.name)}</b>
+            <small><span style="font-weight:700;color:${w.bought?'var(--green)':'var(--amber)'}">${w.bought?'✓ Purchased':'⏳ Planned'}</span>${w.note?' · '+esc(w.note):''}</small>
+          </div>
+          <div class="row-amount ${w.bought?'negative':''}" style="font-size:14px">${money(w.cost)}</div>
+          ${!w.bought
+            ? `<button class="btn green" onclick="toggleWish('${w.id}')" title="Deduct cost and mark purchased" style="font-weight:900;padding:8px 12px">Buy</button>`
+            : `<button class="btn" onclick="toggleWish('${w.id}')" title="Restore money to balance" style="font-weight:900">↺ Undo</button>`
+          }
+          <button class="btn danger" onclick="deleteWish('${w.id}')">×</button>
+        </div>
+      `).join(''):`<div class="empty">${wishTab==='planned'?'No planned wishlist items.':'No purchased items yet.'}</div>`}
+    </div>
+    <div class="form two" style="margin-top:14px;padding-top:12px;border-top:1px solid var(--line)">
+      <div class="field"><label>Item name</label><input id="wishName" placeholder="e.g. Headphones"></div>
+      <div class="field"><label>Estimated cost (৳)</label><input id="wishCost" type="number" inputmode="decimal" placeholder="0"></div>
+      <div class="field"><label>Wallet</label><select id="wishWallet">${walletOptions()}</select></div>
+      <div class="field"><label>Note</label><input id="wishNote" placeholder="Optional note"></div>
+    </div>
+  `,`<div class="sheet-actions"><button class="btn primary" onclick="addWish()">＋ Add item</button></div>`)}
+function addWish(){const n=$('#wishName').value.trim(),c=+$('#wishCost').value,w=$('#wishWallet')?.value||primaryWalletId();if(!n)return toast('Enter item name');S.wishlist.push({id:uid(),name:n,cost:c||0,walletId:w,note:$('#wishNote').value.trim(),bought:false});save();openWishlist(wishTab);render();toast('Wishlist item added')}
+function toggleWish(id){const w=S.wishlist.find(x=>x.id===id);if(!w)return;if(!w.bought){const wid=w.walletId||primaryWalletId();w.walletId=wid;w.bought=true;const txId=uid();w.txId=txId;if(w.cost>0){S.transactions.push({id:txId,type:'expense',amount:w.cost,date:today(),category:'Wishlist',walletId:wid,note:`Wishlist: ${w.name}`,createdAt:new Date().toISOString()})}toast(`Purchased: ${money(w.cost)} deducted from balance`)}else{w.bought=false;if(w.txId){S.transactions=S.transactions.filter(t=>t.id!==w.txId);delete w.txId}toast(`Restored ${money(w.cost)} to balance`)}save();openWishlist(wishTab);render()}
+function deleteWish(id){const w=S.wishlist.find(x=>x.id===id);if(!w||!confirm(`Delete wishlist item "${w.name}"?`))return;if(w.txId)S.transactions=S.transactions.filter(t=>t.id!==w.txId);S.wishlist=S.wishlist.filter(x=>x.id!==id);save();openWishlist(wishTab);render();toast('Item deleted')}
+function openNote(){modal('Quick note',`<div class="field"><label>Note</label><textarea id="nText" placeholder="Remember something..."></textarea></div>`,`<div class="sheet-actions"><button class="btn primary" onclick="saveNote()">Save note</button></div>`)}function saveNote(){const t=$('#nText').value.trim();if(!t)return;S.notes.push({id:uid(),date:today(),text:t});save();closeModal();toast('Note saved')}
+function openRecurring(){modal('Recurring bills & subscriptions',`<div class="list">${S.recurring.length?S.recurring.map(r=>`<div class="row-item"><div class="row-icon">↻</div><div class="row-copy"><b>${esc(r.name)}</b><small>Day ${r.day} · ${esc(r.category)}</small></div><div class="row-amount">${money(r.amount)}</div><button class="btn danger" onclick="deleteRecurring('${r.id}')">×</button></div>`).join(''):'<div class="empty">No recurring items.</div>'}</div><div class="form two" style="margin-top:12px"><div class="field"><label>Name</label><input id="rcName" placeholder="Internet bill"></div><div class="field"><label>Amount</label><input id="rcAmount" type="number"></div><div class="field"><label>Day of month</label><input id="rcDay" type="number" min="1" max="31"></div><div class="field"><label>Category</label><input id="rcCat" placeholder="Utilities"></div><div class="field"><label>Wallet</label><select id="rcWallet">${walletOptions()}</select></div></div>`,`<div class="sheet-actions"><button class="btn primary" onclick="addRecurring()">Add recurring</button></div>`)}function addRecurring(){const n=$('#rcName').value.trim(),a=+$('#rcAmount').value,day=+$('#rcDay').value;if(!n||!(a>0)||!day)return toast('Add recurring details');S.recurring.push({id:uid(),name:n,amount:a,day,category:$('#rcCat').value.trim()||'Recurring',walletId:$('#rcWallet').value,lastPosted:''});save();openRecurring();render()}function deleteRecurring(id){S.recurring=S.recurring.filter(x=>x.id!==id);save();openRecurring()}
+function processRecurring(){const now=new Date(),month=today().slice(0,7),day=now.getDate();let changed=false;S.recurring.forEach(r=>{if(r.day<=day&&r.lastPosted!==month){S.transactions.push({id:uid(),type:'expense',amount:r.amount,date:today(),category:r.category,walletId:r.walletId,note:r.name+' (recurring)',createdAt:new Date().toISOString()});r.lastPosted=month;changed=true}});if(changed)save()}
+function triggerScanReceipt(){
+  let fi=$('#quickScanFileInput');
+  if(!fi){
+    fi=document.createElement('input');
+    fi.id='quickScanFileInput';
+    fi.type='file';
+    fi.accept='image/*';
+    fi.setAttribute('capture','environment');
+    fi.style.display='none';
+    document.body.appendChild(fi);
+  }
+  fi.onchange=()=>{
+    const f=fi.files?.[0];
+    if(!f)return;
+    const r=new FileReader();
+    r.onload=()=>processScannedReceipt(r.result);
+    r.readAsDataURL(f);
+    fi.value='';
+  };
+  fi.click();
+}
+
+function parseReceiptText(text){
+  const lines=String(text||'').split(/\r?\n/).map(l=>l.trim()).filter(Boolean);
+  let category='Other', note='';
+  const full=String(text||'').toLowerCase();
+
+  if(/(pharma|medicine|tablet|capsule|syrup|hospital|clinic|doctor|drug|rx|\bmg\b|dispensary|square|incepta|beximco|lazz)/i.test(full)){
+    category='Medicine';
+  } else if(/(bus|ticket|uber|pathao|cng|fare|fuel|petrol|diesel|gas|transport|ride|toll|shohagh|green line|ena)/i.test(full)){
+    category='Transport';
+  } else if(/(restaurant|cafe|burger|pizza|kitchen|dining|food|coffee|tea|baker|shawarma|grill|biryani|kacchi)/i.test(full)){
+    category='Food';
+  } else if(/(grocery|supermarket|mart|bazar|bazaar|rice|oil|salt|dal|store|market|shwapno|meenaclick|unimart)/i.test(full)){
+    category='Groceries';
+  } else if(/(electric|wasa|desco|dpdc|nesco|wifi|internet|utility|water bill|gas bill|recharge)/i.test(full)){
+    category='Utilities';
+  } else if(/(cloth|shirt|shoe|wear|fashion|pant|dress|shop|apex|bata|aarong)/i.test(full)){
+    category='Shopping';
+  }
+
+  for(const line of lines.slice(0,4)){
+    if(line.length>2 && !/^\d+$/.test(line) && !/(receipt|invoice|bill|cash memo|tax|vat|welcome|token|date|time)/i.test(line)){
+      note=line.slice(0,35);
+      break;
+    }
+  }
+
+  let foundAmount=0;
+  for(let i=lines.length-1; i>=0; i--){
+    const l=lines[i];
+    if(/(total|net|payable|amount|subtotal|due|paid|bdt|tk|৳)/i.test(l)){
+      const match=l.match(/(?:(?:total|net|payable|amount|bdt|tk|৳)[\s:=]*)([0-9,]+(?:\.[0-9]{1,2})?)/i)
+               || l.match(/([0-9,]+(?:\.[0-9]{1,2})?)(?:\s*(?:bdt|tk|৳|\/-)?)$/i);
+      if(match){
+        const val=parseFloat(match[1].replace(/,/g,''));
+        if(val>0){ foundAmount=val; break; }
+      }
+    }
+  }
+
+  if(!foundAmount){
+    const allNums=[];
+    for(const l of lines){
+      const matches=l.matchAll(/\b([0-9]{1,6}(?:\.[0-9]{1,2})?)\b/g);
+      for(const m of matches){
+        const val=parseFloat(m[1]);
+        if(val>=5 && val<=1000000 && !/^(19|20)\d\d$/.test(m[1])){
+          allNums.push(val);
+        }
+      }
+    }
+    if(allNums.length) foundAmount=Math.max(...allNums);
+  }
+
+  return { amount: foundAmount, category, note: note || (category+' receipt') };
+}
+
+async function processScannedReceipt(dataUrl){
+  S.receiptDraft=dataUrl;
+  save();
+
+  modal('Scanning Receipt',`
+    <div class="scan-viewfinder">
+      <img src="${dataUrl}" id="scanTargetImg" alt="Receipt">
+      <div class="scan-laser"></div>
+    </div>
+    <div id="scanStatusMsg" class="empty" style="font-weight:800;color:var(--red);padding:10px">
+      🔍 Reading receipt amount and category…
+    </div>
+  `,`<div class="sheet-actions"><button class="btn" onclick="closeModal()">Cancel</button></div>`);
+
+  const setStatus=(msg)=>{ if($('#scanStatusMsg')) $('#scanStatusMsg').textContent=msg; };
+
+  // Tier 1: If AI API key is configured, use AI vision
+  if(S.settings.aiKey){
+    try{
+      setStatus('Analyzing receipt with Spenzy AI…');
+      const prompt='Read this receipt and return strict JSON only: {"amount":number,"category":"Transport|Medicine|Food|Groceries|Shopping|Utilities|Education|Entertainment|Personal|Other","note":"merchant name or description"}.';
+      const raw=await aiRequest(prompt, dataUrl);
+      const m=String(raw).match(/\{[\s\S]*\}/);
+      const j=JSON.parse(m?m[0]:raw);
+      if(j&&j.amount>0){
+        closeModal();
+        openMoney('expense',{ amount: j.amount, category: j.category||'Receipt', note: j.note||'Receipt' });
+        toast(`✓ Scanned: ${money(j.amount)} · ${j.category||'Expense'}`);
+        return;
+      }
+    }catch(e){
+      console.warn('AI vision scan failed, falling back to OCR:', e);
+    }
+  }
+
+  // Tier 2: Browser on-device / OCR engine
+  try{
+    setStatus('Detecting text and amount…');
+    let extractedText='';
+
+    if('TextDetector' in window){
+      try{
+        const detector=new window.TextDetector();
+        const img=document.getElementById('scanTargetImg')||new Image();
+        if(!img.complete) await new Promise(r=>img.onload=r);
+        const results=await detector.detect(img);
+        extractedText=results.map(r=>r.rawValue).join('\n');
+      }catch(err){
+        console.warn('TextDetector failed:', err);
+      }
+    }
+
+    if(!extractedText && typeof window.Tesseract==='undefined'){
+      setStatus('Loading local text recognizer…');
+      try{
+        await new Promise((resolve,reject)=>{
+          const s=document.createElement('script');
+          s.src='https://cdn.jsdelivr.net/npm/tesseract.js@5/dist/tesseract.min.js';
+          s.onload=resolve;
+          s.onerror=reject;
+          document.head.appendChild(s);
+        });
+      }catch(e){}
+    }
+
+    if(!extractedText && typeof window.Tesseract!=='undefined'){
+      setStatus('Recognizing receipt numbers…');
+      const res=await window.Tesseract.recognize(dataUrl,'eng');
+      extractedText=res?.data?.text||'';
+    }
+
+    if(extractedText){
+      const parsed=parseReceiptText(extractedText);
+      if(parsed.amount>0){
+        closeModal();
+        openMoney('expense', parsed);
+        toast(`✓ Scanned: ${money(parsed.amount)} · ${parsed.category}`);
+        return;
+      }
+    }
+  }catch(e){
+    console.warn('OCR error:', e);
+  }
+
+  // Tier 3: Fallback if no exact number could be auto-extracted
+  setStatus('Receipt captured! Please enter the amount to complete expense:');
+  modal('Receipt Captured',`
+    <div class="scan-viewfinder" style="max-height:160px">
+      <img src="${dataUrl}" alt="Receipt">
+    </div>
+    <div class="field" style="margin-bottom:10px">
+      <label style="font-size:11px;font-weight:800;text-transform:uppercase">Amount (৳)</label>
+      <input id="fastAmount" type="text" inputmode="text" placeholder="0 or 10+5+6+20" style="font-size:24px;font-weight:900;padding:12px;color:var(--red)">
+    </div>
+    <div class="field">
+      <label>Category</label>
+      <div class="cat-chips">
+        ${CATEGORIES.expense.map(c=>`
+          <button type="button" class="cat-chip" onclick="$('#fastCat').value='${c.name}'"><span>${c.icon}</span> ${c.name}</button>
+        `).join('')}
+      </div>
+      <input id="fastCat" list="catDatalist" value="Transport" placeholder="Category" style="margin-top:6px">
+    </div>
+  `,`<div class="sheet-actions"><button class="btn" onclick="closeModal()">Cancel</button><button class="btn primary" onclick="confirmFastReceipt()">Save Expense</button></div>`);
+}
+
+function confirmFastReceipt(){
+  const raw=$('#fastAmount')?.value;
+  const amount=evalMathExpression(raw)||+raw;
+  if(!(amount>0))return toast('Enter an amount');
+  const cat=$('#fastCat')?.value.trim()||'Receipt';
+  closeModal();
+  openMoney('expense',{ amount, category: cat, note: 'Scanned receipt' });
+}
+
+function openReceipt(){ triggerScanReceipt(); }
+function previewReceipt(){ triggerScanReceipt(); }
+async function analyzeReceipt(){ triggerScanReceipt(); }
+function calcForecast(){const tx=monthTx(),spent=tx.filter(x=>x.type==='expense').reduce((a,x)=>a+x.amount,0),inc=tx.filter(x=>x.type==='income').reduce((a,x)=>a+x.amount,0)||+S.profile.income||0,d=new Date(),days=d.getDate(),totalDays=new Date(d.getFullYear(),d.getMonth()+1,0).getDate(),pace=days?spent/days*totalDays:0,end=inc-pace;return `At the current pace, projected spending is ${money(pace)} and month-end cash flow is ${end>=0?'+':''}${money(end)}.`}
+function adaptiveBudgets(){const ex=S.transactions.filter(x=>x.type==='expense'),map={};ex.forEach(t=>(map[t.category||'Other']??=[]).push(+t.amount));return Object.entries(map).map(([category,a])=>({category,limit:Math.ceil(a.reduce((x,y)=>x+y,0)/Math.max(1,new Set(ex.filter(t=>(t.category||'Other')===category).map(t=>String(t.date).slice(0,7))).size)*1.05)})).sort((a,b)=>b.limit-a.limit)}function applyBudgets(){const b=adaptiveBudgets();if(!b.length)return toast('Not enough spending data');b.forEach(x=>S.categoryBudgets[x.category]=x.limit);save();toast('Adaptive budgets applied');renderSmart()}
+function findAnomalies(){const ex=S.transactions.filter(x=>x.type==='expense'),res=[];for(const t of ex){const same=ex.filter(x=>x.category===t.category&&x.id!==t.id).map(x=>+x.amount);if(same.length>=3){const avg=same.reduce((a,b)=>a+b,0)/same.length;if(+t.amount>avg*2.5)res.push(t)}}return res.sort((a,b)=>b.amount-a.amount)}function showAnomalies(){const a=findAnomalies();modal('Unusual spending',`<div class="list">${a.length?a.map(txRow).join(''):'<div class="empty">No unusual transactions detected yet.</div>'}</div>`)}
+function investmentText(){if(+S.profile.debt>0)return 'Prioritize expensive debt and a stable emergency fund before taking investment risk.';if(+S.profile.emergencyFund<Math.max(1,+S.profile.income)*3)return 'Build an emergency fund first. A common planning target is several months of essential expenses.';return `Your selected risk preference is ${S.profile.risk}. Keep investing diversified, goal-based and within money you can leave invested.`}function showInvestment(){modal('Investment guidance',`<div class="insight glass"><h3>Personal planning guidance</h3><p>${esc(investmentText())}</p></div><div class="empty">This is educational planning guidance, not a guarantee of returns or individualized regulated financial advice.</div>`)}
+function toggleRoundup(){S.settings.roundup=!S.settings.roundup;save();renderSmart();toast(S.settings.roundup?'Round-up enabled':'Round-up disabled')}
+function openProfile(){const p=S.profile;modal('Profile & money plan',`<div class="form two"><div class="field"><label>Name</label><input id="pName" value="${esc(p.name)}"></div><div class="field"><label>Age</label><input id="pAge" type="number" value="${esc(p.age)}"></div><div class="field"><label>Occupation</label><input id="pOcc" value="${esc(p.occupation)}"></div><div class="field"><label>Monthly income</label><input id="pIncome" type="number" value="${p.income||''}"></div><div class="field"><label>Monthly budget</label><input id="pBudget" type="number" value="${p.budget||''}"></div><div class="field"><label>Emergency fund</label><input id="pEmergency" type="number" value="${p.emergencyFund||''}"></div><div class="field"><label>Debt</label><input id="pDebt" type="number" value="${p.debt||''}"></div><div class="field"><label>Risk preference</label><select id="pRisk"><option ${p.risk==='Conservative'?'selected':''}>Conservative</option><option ${p.risk==='Balanced'?'selected':''}>Balanced</option><option ${p.risk==='Growth'?'selected':''}>Growth</option></select></div></div>`,`<div class="sheet-actions"><button class="btn primary" onclick="saveProfile()">Save profile</button></div>`)}function saveProfile(){S.profile={...S.profile,name:$('#pName').value.trim(),age:$('#pAge').value,occupation:$('#pOcc').value.trim(),income:+$('#pIncome').value||0,budget:+$('#pBudget').value||0,emergencyFund:+$('#pEmergency').value||0,debt:+$('#pDebt').value||0,risk:$('#pRisk').value};save();closeModal();render();toast('Profile saved')}
+function detectProviderFromKey(key){const k=String(key||'').trim();if(!k)return{id:'',label:'Not detected',confidence:''};if(k.startsWith('sk-ant-'))return{id:'anthropic',label:'Anthropic',confidence:'high'};if(k.startsWith('AIza'))return{id:'gemini',label:'Google Gemini',confidence:'high'};if(k.startsWith('gsk_'))return{id:'groq',label:'Groq',confidence:'high'};if(k.startsWith('sk-or-v1-'))return{id:'openrouter',label:'OpenRouter',confidence:'high'};if(k.startsWith('xai-'))return{id:'xai',label:'xAI',confidence:'high'};if(k.startsWith('sk-proj-')||k.startsWith('sk-svcacct-')||k.startsWith('sk-admin-'))return{id:'openai',label:'OpenAI',confidence:'high'};if(k.startsWith('sk-'))return{id:'openai',label:'OpenAI-style key',confidence:'low'};return{id:'',label:'Unknown key pattern',confidence:''}}
+function detectProvider(){if(S.settings.aiProvider&&S.settings.aiProvider!=='auto')return S.settings.aiProvider;return detectProviderFromKey(S.settings.aiKey).id||'offline'}
+function providerCfg(){return AI_PROVIDERS[detectProvider()]||null}
+function openAISettings(){const d=detectProviderFromKey(S.settings.aiKey);modal('AI settings',`<div class="form"><div class="field"><label>API key</label><input id="aiKey" type="password" autocomplete="off" autocapitalize="off" spellcheck="false" value="${esc(S.settings.aiKey)}" placeholder="Paste API key" oninput="updateAiDetectionUI()"></div><div class="field"><label>Detected provider</label><input id="aiDetected" value="${esc(d.label)}" readonly></div><div class="field"><label>Provider override</label><select id="aiProvider" onchange="updateAiDetectionUI(true)"><option value="auto" ${S.settings.aiProvider==='auto'?'selected':''}>Auto detect</option>${Object.entries(AI_PROVIDERS).map(([id,c])=>`<option value="${id}" ${S.settings.aiProvider===id?'selected':''}>${c.label}</option>`).join('')}</select></div><div class="field"><label>Model (optional)</label><input id="aiModel" value="${esc(S.settings.aiModel)}" placeholder="Auto default"></div><div id="aiStatus" class="empty" style="padding:8px 4px;text-align:left">${d.id?esc(d.label+' detected locally.'):'Paste a supported API key or choose a provider manually.'}</div></div><div class="empty">AI needs internet. The key stays in this app's local storage. Some WebView builders can block direct browser API requests.</div>`,`<div class="sheet-actions"><button class="btn" onclick="testAI()">Detect & test</button><button class="btn primary" onclick="saveAISettings()">Save</button></div>`);updateAiDetectionUI()}
+function updateAiDetectionUI(providerChanged=false){const key=$('#aiKey')?.value.trim()||'',d=detectProviderFromKey(key),override=$('#aiProvider')?.value||'auto',id=override==='auto'?d.id:override,cfg=AI_PROVIDERS[id];if($('#aiDetected'))$('#aiDetected').value=d.label;if($('#aiModel')&&providerChanged)$('#aiModel').value='';if($('#aiModel'))$('#aiModel').placeholder=cfg?`Default: ${cfg.model}`:'Auto default';const st=$('#aiStatus');if(st){if(!key)st.textContent='Paste a supported API key or choose a provider manually.';else if(override!=='auto')st.textContent=`Using ${cfg?.label||override} by manual selection.`;else if(d.id)st.textContent=`${d.label} key pattern detected locally${d.confidence==='low'?' (verify provider if needed)':''}.`;else st.textContent='Unknown key pattern. Choose the provider manually.'}}
+function syncAISettingsFromForm(){if(!$('#aiKey'))return;S.settings.aiProvider=$('#aiProvider').value||'auto';S.settings.aiKey=$('#aiKey').value.trim();S.settings.aiModel=$('#aiModel').value.trim();save()}
+function saveAISettings(){syncAISettingsFromForm();closeModal();render();toast('AI settings saved')}
+async function testAI(){syncAISettingsFromForm();const st=$('#aiStatus');if(st)st.textContent='Testing connection…';try{const out=await aiRequest('Reply with exactly: Connected');if(st)st.textContent=`Connected · ${AI_PROVIDERS[detectProvider()]?.label||detectProvider()}${out?' · '+String(out).trim().slice(0,40):''}`;toast('AI connected')}catch(e){if(st)st.textContent=e.message||'AI connection failed';toast('AI test failed')}}
+async function aiRequest(prompt,imageData){const provider=detectProvider(),key=String(S.settings.aiKey||'').trim(),cfg=providerCfg();if(!key)throw Error('Add an API key first');if(!cfg)throw Error('Provider could not be detected. Choose it manually in AI settings.');const model=S.settings.aiModel||cfg.model,ctrl=new AbortController(),timer=setTimeout(()=>ctrl.abort(),25000);try{let r,data;if(cfg.kind==='responses'){let input=prompt;if(imageData)input=[{role:'user',content:[{type:'input_text',text:prompt},{type:'input_image',image_url:imageData}]}];r=await fetch(cfg.endpoint,{method:'POST',headers:{'Content-Type':'application/json','Authorization':'Bearer '+key},body:JSON.stringify({model,input,max_output_tokens:700}),signal:ctrl.signal,cache:'no-store'});data=await r.json().catch(()=>({}));if(!r.ok)throw Error(data?.error?.message||`OpenAI request failed (${r.status})`);return String(data.output_text||data.output?.flatMap(o=>o.content||[]).map(c=>c.text||'').join('')||'').trim()}if(cfg.kind==='openai'){const content=imageData?[{type:'text',text:prompt},{type:'image_url',image_url:{url:imageData}}]:prompt,headers={'Content-Type':'application/json','Authorization':'Bearer '+key};if(provider==='openrouter'){headers['HTTP-Referer']='https://spenzy.local';headers['X-Title']='Spenzy'}r=await fetch(cfg.endpoint,{method:'POST',headers,body:JSON.stringify({model,messages:[{role:'user',content}],temperature:.15,max_tokens:700}),signal:ctrl.signal,cache:'no-store'});data=await r.json().catch(()=>({}));if(!r.ok)throw Error(data?.error?.message||`AI request failed (${r.status})`);return String(data?.choices?.[0]?.message?.content||'').trim()}if(cfg.kind==='anthropic'){const content=imageData?[{type:'image',source:{type:'base64',media_type:(imageData.match(/^data:([^;]+)/)||[])[1]||'image/jpeg',data:imageData.split(',')[1]}},{type:'text',text:prompt}]:prompt;r=await fetch(cfg.endpoint,{method:'POST',headers:{'Content-Type':'application/json','x-api-key':key,'anthropic-version':'2023-06-01','anthropic-dangerous-direct-browser-access':'true'},body:JSON.stringify({model,max_tokens:700,messages:[{role:'user',content}]}),signal:ctrl.signal,cache:'no-store'});data=await r.json().catch(()=>({}));if(!r.ok)throw Error(data?.error?.message||`Anthropic request failed (${r.status})`);return String((data?.content||[]).map(x=>x.text||'').join('\n')).trim()}if(cfg.kind==='gemini'){const parts=[{text:prompt}];if(imageData){const [meta,b64]=imageData.split(',');parts.push({inline_data:{mime_type:(meta.match(/data:(.*?);/)||[])[1]||'image/jpeg',data:b64}})}const url=cfg.endpoint.replace('{model}',encodeURIComponent(model));r=await fetch(url,{method:'POST',headers:{'Content-Type':'application/json','x-goog-api-key':key},body:JSON.stringify({contents:[{parts}],generationConfig:{temperature:.15,maxOutputTokens:700}}),signal:ctrl.signal,cache:'no-store'});data=await r.json().catch(()=>({}));if(!r.ok)throw Error(data?.error?.message||`Gemini request failed (${r.status})`);return String(data?.candidates?.[0]?.content?.parts?.map(p=>p.text||'').join('')||'').trim()}throw Error('Provider not supported')}catch(e){if(e?.name==='AbortError')throw Error('AI request timed out. Check your internet connection.');if(e instanceof TypeError)throw Error('Network/WebView blocked the AI request. Check internet permission and WebToApp network access.');throw e}finally{clearTimeout(timer)}}
+function openAI(){modal('Spenzy AI',`<div class="chat" id="chatBox">${S.chat.length?S.chat.map(m=>`<div class="msg ${m.role==='user'?'user':'ai'}">${esc(m.text)}</div>`).join(''):'<div class="empty">Ask about your money, habits, goals or recent activity.</div>'}</div><div class="field"><input id="chatInput" placeholder="Ask Spenzy AI..."></div>`,`<div class="sheet-actions"><button class="btn" onclick="openAISettings()">API settings</button><button class="btn primary" onclick="sendAI()">Send</button></div>`)}
+async function sendAI(){const input=$('#chatInput'),q=input?.value.trim();if(!q)return;input.blur();document.documentElement.classList.remove('keyboard-open');S.chat.push({role:'user',text:q});save();if(!S.settings.aiKey){S.chat.push({role:'ai',text:'Add an API key in AI settings to use live Spenzy AI. Your local data remains on this device.'});save();openAI();return}const context={profile:S.profile,month:{income:monthSum('income'),spent:monthExpenses(),saved:monthSum('saving')+monthSum('goal')},walletBalance:totalWallets(),goals:S.goals.map(g=>({name:g.name,target:g.target,current:g.current})),dues:S.dues.filter(d=>d.status==='open'),today:S.daily[today()]||{}};try{const a=await aiRequest(`You are Spenzy AI, a concise personal life and finance assistant. Use only supplied data for personalized claims. User data: ${JSON.stringify(context)}\nQuestion: ${q}`);S.chat.push({role:'ai',text:a||'No response'});save();openAI()}catch(e){S.chat.push({role:'ai',text:'AI error: '+(e.message||'Could not reach provider')});save();openAI()}}
+function openBackup(){modal('Backup & data',`<div class="setting-card glass"><div class="setting-row"><div><b>Export JSON backup</b><small>Complete local Spenzy data</small></div><button class="btn" onclick="exportJSON()">Export</button></div><div class="setting-row"><div><b>Export transactions CSV</b><small>Money activity for spreadsheets</small></div><button class="btn" onclick="exportCSV()">Export</button></div><div class="setting-row"><div><b>Import backup</b><small>Restore a Spenzy JSON backup</small></div><button class="btn" onclick="$('#importFile').click()">Import</button></div><div class="setting-row"><div><b>Import transactions CSV</b><small>Date, Type, Amount, Category, Wallet, Note</small></div><button class="btn" onclick="$('#importCsv').click()">Import</button></div><input id="importFile" type="file" accept="application/json" class="hidden" onchange="importJSON(this.files[0])"><input id="importCsv" type="file" accept=".csv,text/csv" class="hidden" onchange="importCSV(this.files[0])"></div>`)}function download(name,blob){const u=URL.createObjectURL(blob),a=document.createElement('a');a.href=u;a.download=name;a.click();setTimeout(()=>URL.revokeObjectURL(u),3000)}function exportJSON(){download('Spenzy-backup.json',new Blob([JSON.stringify(S,null,2)],{type:'application/json'}))}function exportCSV(){const rows=[['Date','Type','Amount','Category','Wallet','Note'],...S.transactions.map(t=>[t.date,t.type,t.amount,t.category,walletName(t.walletId),t.note])];download('Spenzy-transactions.csv',new Blob([rows.map(r=>r.map(v=>'"'+String(v??'').replaceAll('"','""')+'"').join(',')).join('\n')],{type:'text/csv'}))}function importJSON(f){if(!f)return;const r=new FileReader();r.onload=()=>{try{const x=JSON.parse(r.result);S={...defaultState(),...x};save();closeModal();render();toast('Backup restored')}catch{toast('Invalid backup file')}};r.readAsText(f)}
+function importCSV(f){if(!f)return;const r=new FileReader();r.onload=()=>{try{const lines=String(r.result).split(/\r?\n/).filter(Boolean);if(lines.length<2)throw Error();const parse=line=>{const out=[];let cur='',q=false;for(let i=0;i<line.length;i++){const c=line[i];if(c==='"'){if(q&&line[i+1]==='"'){cur+='"';i++}else q=!q}else if(c===','&&!q){out.push(cur);cur=''}else cur+=c}out.push(cur);return out};const head=parse(lines[0]).map(x=>x.toLowerCase().trim());let added=0;for(const line of lines.slice(1)){const a=parse(line);const getc=n=>a[head.indexOf(n)]||'';const amount=+getc('amount');if(!(amount>0))continue;const walletLabel=getc('wallet');let wid=S.wallets.find(w=>w.name.toLowerCase()===walletLabel.toLowerCase())?.id||'';S.transactions.push({id:uid(),date:getc('date')||today(),type:getc('type')||'expense',amount,category:getc('category')||'Imported',walletId:wid,note:getc('note')||'',createdAt:new Date().toISOString()});added++}save();closeModal();render();toast(`${added} transactions imported`)}catch{toast('Could not import CSV')}};r.readAsText(f)}
+function toggleLanguage(){S.settings.language=S.settings.language==='en'?'bn':'en';save();render();toast(S.settings.language==='bn'?'বাংলা চালু হয়েছে':'English enabled')}function applyLanguage(){if(S.settings.language!=='bn')return;const map={Home:'হোম',Activity:'অ্যাক্টিভিটি',Smart:'স্মার্ট',Calendar:'ক্যালেন্ডার',Account:'অ্যাকাউন্ট'};$$('.bottomnav button').forEach(b=>{const txt=[...b.childNodes].find(n=>n.nodeType===3);if(txt&&map[txt.textContent.trim()])txt.textContent=map[txt.textContent.trim()]})}
+function toggleTheme(){S.settings.theme=S.settings.theme==='dark'?'light':'dark';save();applyTheme()}function applyTheme(){document.documentElement.classList.toggle('dark',S.settings.theme==='dark');document.querySelector('meta[name=theme-color]').content=S.settings.theme==='dark'?'#121316':'#ed5047'}
+function resetAll(){if(!confirm('Erase all Spenzy data on this device?'))return;localStorage.removeItem(KEY);S=defaultState();save();render();toast('Data reset')}
+function shiftCal(n){calDate=new Date(calDate.getFullYear(),calDate.getMonth()+n,1);renderCalendar()}function openDay(ds){const tx=S.transactions.filter(t=>t.date===ds),notes=S.notes.filter(n=>n.date===ds);modal(ds,`<div class="list">${tx.length?tx.map(txRow).join(''):''}${notes.map(n=>`<div class="row-item"><div class="row-icon">✎</div><div class="row-copy"><b>${esc(n.text)}</b><small>Note</small></div></div>`).join('')}${!tx.length&&!notes.length?'<div class="empty">Nothing logged on this date.</div>':''}</div><div class="field" style="margin-top:10px"><label>Day marker</label><input id="markerText" value="${esc(S.markers.find(x=>x.date===ds)?.label||'')}" placeholder="Exam, Salary, Trip..."></div>`,`<div class="sheet-actions"><button class="btn primary" onclick="saveMarker('${ds}')">Save marker</button></div>`)}function saveMarker(ds){const t=$('#markerText').value.trim();S.markers=S.markers.filter(x=>x.date!==ds);if(t)S.markers.push({date:ds,label:t});save();closeModal();renderCalendar()}
+function openUniversalSearch(){modal('Search Spenzy',`<div class="field"><input id="uSearch" placeholder="Search transactions, goals, bills, notes..."></div><div id="uResults" class="list" style="margin-top:10px"><div class="empty">Start typing to search your local data.</div></div>`);setTimeout(()=>$('#uSearch').oninput=e=>renderUSearch(e.target.value),30)}function renderUSearch(q){q=q.trim().toLowerCase();const out=$('#uResults');if(!q){out.innerHTML='<div class="empty">Start typing to search your local data.</div>';return}const items=[];S.transactions.filter(x=>JSON.stringify(x).toLowerCase().includes(q)).slice(0,8).forEach(x=>items.push(txRow(x)));S.goals.filter(x=>x.name.toLowerCase().includes(q)).forEach(g=>items.push(`<div class="row-item"><div class="row-icon">◎</div><div class="row-copy"><b>${esc(g.name)}</b><small>Goal</small></div><div class="row-amount">${money(g.current)}</div></div>`));S.notes.filter(x=>x.text.toLowerCase().includes(q)).forEach(n=>items.push(`<div class="row-item"><div class="row-icon">✎</div><div class="row-copy"><b>${esc(n.text)}</b><small>Note · ${n.date}</small></div></div>`));out.innerHTML=items.join('')||'<div class="empty">No results.</div>'}
+// Expose handlers used by inline UI
+Object.assign(window,{updateAiDetectionUI,testAI,setPage,setActivityFilter,openMoney,openWallets,openBills,openGoals,openDues,prefillDue,openRoutines,openReceipt,openHabits,quickDaily,openFocus,openSleep,openPrayer,openScreen,openRemember,openWishlist,openNote,openRecurring,openAI,toggleTheme,toast,renderActivity,saveMoney,addWallet,deleteWallet,addBill,toggleBill,deleteBill,addGoal,contributeGoal,deleteGoal,addDue,settleDue,reopenDue,deleteDue,addRoutine,runRoutine,deleteRoutine,addHabit,toggleHabit,deleteHabit,setFocus,toggleFocus,logFocusNow,saveSleep,togglePrayer,saveScreen,addReminder,toggleReminder,deleteReminder,addWish,toggleWish,deleteWish,saveNote,addRecurring,deleteRecurring,previewReceipt,analyzeReceipt,applyBudgets,showAnomalies,showInvestment,toggleRoundup,openProfile,saveProfile,openAISettings,saveAISettings,sendAI,openBackup,exportJSON,exportCSV,importJSON,importCSV,toggleLanguage,resetAll,shiftCal,openDay,saveMarker,openUniversalSearch,closeModal,logLearned,primaryWalletId,totalWallets,walletBalance,getS:()=>S,triggerScanReceipt,processScannedReceipt,parseReceiptText,confirmFastReceipt,selectCategory,highlightMatchingChip,evalMathExpression,onAmountInput,resolveAmountCalc,appendMath,CATEGORIES,getCategoriesForType});
+
+// Keep Android WebView stable while the system keyboard opens/closes.
+document.addEventListener('focusin',e=>{if(e.target&&e.target.matches('input,textarea,select'))document.documentElement.classList.add('keyboard-open')},{passive:true});
+document.addEventListener('focusout',()=>{setTimeout(()=>{const a=document.activeElement;if(!a||!a.matches?.('input,textarea,select'))document.documentElement.classList.remove('keyboard-open')},60)},{passive:true});
+applyTheme();processRecurring();render();
+})();
+</script>
+</body></html>

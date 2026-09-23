@@ -180,6 +180,7 @@ function renderHome(){
     </div>
 
     <div class="quick-tools-row">
+      <div class="qtool-btn" onclick="openMonthlyReport()" style="border-color:rgba(16,185,129,.4);color:var(--green);font-weight:900"><span>📊</span>Report</div>
       <div class="qtool-btn" onclick="triggerScanReceipt()" style="border-color:rgba(237,80,71,.4);color:var(--red);font-weight:900"><span>📷</span>Scan Bill</div>
       <div class="qtool-btn" onclick="openWishlist()"><span>♡</span>Wishlist (${S.wishlist.filter(w=>!w.bought).length})</div>
       <div class="qtool-btn" onclick="openGoals()"><span>◎</span>Goals (${S.goals.length})</div>
@@ -211,7 +212,7 @@ function activityFiltered(){const q=searchQuery.toLowerCase();return [...S.trans
 function updateActivityList(){const list=$('#activityList');if(!list)return;const filtered=activityFiltered();list.innerHTML=filtered.length?filtered.map(txRow).join(''):'<div class="empty">No matching activity.</div>'}
 function renderActivity(){const filtered=activityFiltered();$('#activity').innerHTML=`<div class="page-title"><h1>Activity</h1><p>One timeline for money, habits and monthly progress.</p></div>${monthlyVisualHtml()}<div class="toolbar" style="margin-top:10px"><input class="search" id="actSearch" placeholder="Search activity" value="${esc(searchQuery)}"><button class="glass-btn primary" onclick="openMoney('expense')">＋</button></div><div class="chiprow">${['all','expense','income','saving','goal','lent'].map(f=>`<button class="chip ${activityFilter===f?'active':''}" onclick="setActivityFilter('${f}')">${f[0].toUpperCase()+f.slice(1)}</button>`).join('')}</div><div class="list-card glass"><div class="list" id="activityList">${filtered.length?filtered.map(txRow).join(''):'<div class="empty">No matching activity.</div>'}</div></div>`;const input=$('#actSearch');if(input)input.oninput=e=>{searchQuery=e.target.value;updateActivityList()}}
 function setActivityFilter(f){activityFilter=f;renderActivity()}
-function monthlyVisualHtml(){const now=new Date(),months=[];for(let i=5;i>=0;i--){const d=new Date(now.getFullYear(),now.getMonth()-i,1),key=`${d.getFullYear()}-${String(d.getMonth()+1).padStart(2,'0')}`,spent=S.transactions.filter(t=>t.type==='expense'&&String(t.date).startsWith(key)).reduce((a,x)=>a+(+x.amount||0),0);months.push({label:d.toLocaleDateString([],{month:'short'}),spent})}const max=Math.max(1,...months.map(x=>x.spent));const cats={};monthTx().filter(t=>t.type==='expense').forEach(t=>cats[t.category||'Other']=(cats[t.category||'Other']||0)+(+t.amount||0));const top=Object.entries(cats).sort((a,b)=>b[1]-a[1]).slice(0,3);return `<div class="glass list-card"><div class="section-head"><h2>6-month spending</h2><span>${money(monthExpenses())} this month</span></div><div style="display:grid;grid-template-columns:repeat(6,1fr);gap:7px;align-items:end;height:118px">${months.map(x=>`<div style="display:flex;flex-direction:column;align-items:center;justify-content:end;height:100%;gap:5px"><div style="width:70%;height:${Math.max(4,x.spent/max*82)}px;border-radius:8px 8px 5px 5px;background:linear-gradient(180deg,#57adff,#237ff0);box-shadow:0 8px 15px rgba(35,127,240,.18)"></div><small style="font-size:8px;color:var(--muted)">${x.label}</small></div>`).join('')}</div>${top.length?`<div class="chiprow" style="margin-top:8px">${top.map(([k,v])=>`<span class="chip">${esc(k)} · ${money(v)}</span>`).join('')}</div>`:''}</div>`}
+function monthlyVisualHtml(){const now=new Date(),months=[];for(let i=5;i>=0;i--){const d=new Date(now.getFullYear(),now.getMonth()-i,1),key=`${d.getFullYear()}-${String(d.getMonth()+1).padStart(2,'0')}`,spent=S.transactions.filter(t=>t.type==='expense'&&String(t.date).startsWith(key)).reduce((a,x)=>a+(+x.amount||0),0);months.push({key,label:d.toLocaleDateString([],{month:'short'}),spent})}const max=Math.max(1,...months.map(x=>x.spent));const cats={};monthTx().filter(t=>t.type==='expense').forEach(t=>cats[t.category||'Other']=(cats[t.category||'Other']||0)+(+t.amount||0));const top=Object.entries(cats).sort((a,b)=>b[1]-a[1]).slice(0,3);return `<div class="glass list-card"><div class="section-head"><h2>6-month spending</h2><span onclick="openMonthlyReport()" style="font-weight:800;color:var(--red);cursor:pointer">📊 View Report ›</span></div><div style="display:grid;grid-template-columns:repeat(6,1fr);gap:7px;align-items:end;height:118px">${months.map(x=>`<div onclick="openMonthlyReport('${x.key}')" title="View report for ${x.label}" style="cursor:pointer;display:flex;flex-direction:column;align-items:center;justify-content:end;height:100%;gap:5px"><div style="width:70%;height:${Math.max(4,x.spent/max*82)}px;border-radius:8px 8px 5px 5px;background:linear-gradient(180deg,#57adff,#237ff0);box-shadow:0 8px 15px rgba(35,127,240,.18)"></div><small style="font-size:8px;color:var(--muted)">${x.label}</small></div>`).join('')}</div>${top.length?`<div class="chiprow" style="margin-top:8px">${top.map(([k,v])=>`<span class="chip">${esc(k)} · ${money(v)}</span>`).join('')}</div>`:''}</div>`}
 function renderSmart(){const forecast=calcForecast(),budgets=adaptiveBudgets(),anom=findAnomalies(),invest=investmentText();$('#smart').innerHTML=`<div class="page-title"><h1>Smart</h1><p>Forecasts, adaptive budgets and AI guidance from your own data.</p></div><div class="smart-grid">
 <div class="smart-card glass"><div class="sicon">⌁</div><h3>Cash-flow forecast</h3><p>${esc(forecast)}</p><button class="btn primary" onclick="toast('Forecast refreshed')">Refresh</button></div>
 <div class="smart-card glass"><div class="sicon">◫</div><h3>Adaptive budget</h3><p>${budgets.length?esc(budgets.slice(0,2).map(x=>x.category+' '+money(x.limit)).join(' · ')):'Log spending to generate category budgets.'}</p><button class="btn" onclick="applyBudgets()">Apply suggestion</button></div>
@@ -221,7 +222,7 @@ function renderSmart(){const forecast=calcForecast(),budgets=adaptiveBudgets(),a
 <div class="smart-card glass"><div class="sicon">✦</div><h3>Spenzy AI</h3><p>Ask about money, habits, goals and your recent activity.</p><button class="btn primary" onclick="openAI()">Ask Spenzy AI</button></div>
 </div></div>`}
 function renderCalendar(){const y=calDate.getFullYear(),m=calDate.getMonth(),first=new Date(y,m,1).getDay(),days=new Date(y,m+1,0).getDate();let cells='';for(let i=0;i<first;i++)cells+='<div></div>';for(let d=1;d<=days;d++){const ds=`${y}-${String(m+1).padStart(2,'0')}-${String(d).padStart(2,'0')}`,has=S.transactions.some(t=>t.date===ds)||S.notes.some(n=>n.date===ds)||S.markers.some(x=>x.date===ds);cells+=`<button class="cal-day ${ds===today()?'today':''} ${has?'has':''}" onclick="openDay('${ds}')">${d}</button>`}$('#calendar').innerHTML=`<div class="page-title"><h1>Calendar</h1><p>See money, notes and important days together.</p></div><div class="calendar glass"><div class="cal-head"><button class="glass-btn" onclick="shiftCal(-1)">‹</button><b>${calDate.toLocaleDateString([],{month:'long',year:'numeric'})}</b><button class="glass-btn" onclick="shiftCal(1)">›</button></div><div class="cal-grid">${['S','M','T','W','T','F','S'].map(x=>`<div class="empty">${x}</div>`).join('')}${cells}</div></div>`}
-function renderAccount(){const p=S.profile;$('#account').innerHTML=`<div class="page-title"><h1>Account</h1><p>Your profile, automation and data controls.</p></div><div class="setting-card glass"><div class="setting-row"><div><b>${esc(p.name||'Set up your profile')}</b><small>${esc(p.occupation||'Income, budget and preferences')}</small></div><button class="btn" onclick="openProfile()">Edit</button></div><div class="setting-row"><div><b>Wallets & accounts</b><small>${S.wallets.length} configured · ${money(totalWallets())}</small></div><button class="btn" onclick="openWallets()">Manage</button></div><div class="setting-row"><div><b>Recurring bills & subscriptions</b><small>${S.recurring.length} recurring items</small></div><button class="btn" onclick="openRecurring()">Manage</button></div><div class="setting-row"><div><b>One-tap routines</b><small>${S.routines.length} quick routines</small></div><button class="btn" onclick="openRoutines()">Manage</button></div><div class="setting-row"><div><b>AI & receipt analysis</b><small>${S.settings.aiKey?'API key configured':'Optional API key not configured'}</small></div><button class="btn" onclick="openAISettings()">Settings</button></div><div class="setting-row"><div><b>Language</b><small>${S.settings.language==='bn'?'বাংলা':'English'}</small></div><button class="btn" onclick="toggleLanguage()">Change</button></div><div class="setting-row"><div><b>Backup & restore</b><small>JSON backup · CSV export/import</small></div><button class="btn" onclick="openBackup()">Open</button></div><div class="setting-row"><div><b>Reset app data</b><small>Erase all local Spenzy data from this device</small></div><button class="btn danger" onclick="resetAll()">Reset</button></div></div>`}
+function renderAccount(){const p=S.profile;$('#account').innerHTML=`<div class="page-title"><h1>Account</h1><p>Your profile, automation and data controls.</p></div><div class="setting-card glass"><div class="setting-row"><div><b>${esc(p.name||'Set up your profile')}</b><small>${esc(p.occupation||'Income, budget and preferences')}</small></div><button class="btn" onclick="openProfile()">Edit</button></div><div class="setting-row"><div><b>Monthly financial report</b><small>Detailed income, expenses, category breakdown & budget audit</small></div><button class="btn" onclick="openMonthlyReport()">View</button></div><div class="setting-row"><div><b>Wallets & accounts</b><small>${S.wallets.length} configured · ${money(totalWallets())}</small></div><button class="btn" onclick="openWallets()">Manage</button></div><div class="setting-row"><div><b>Recurring bills & subscriptions</b><small>${S.recurring.length} recurring items</small></div><button class="btn" onclick="openRecurring()">Manage</button></div><div class="setting-row"><div><b>One-tap routines</b><small>${S.routines.length} quick routines</small></div><button class="btn" onclick="openRoutines()">Manage</button></div><div class="setting-row"><div><b>AI & receipt analysis</b><small>${S.settings.aiKey?'API key configured':'Optional API key not configured'}</small></div><button class="btn" onclick="openAISettings()">Settings</button></div><div class="setting-row"><div><b>Language</b><small>${S.settings.language==='bn'?'বাংলা':'English'}</small></div><button class="btn" onclick="toggleLanguage()">Change</button></div><div class="setting-row"><div><b>Backup & restore</b><small>JSON backup · CSV export/import</small></div><button class="btn" onclick="openBackup()">Open</button></div><div class="setting-row"><div><b>Reset app data</b><small>Erase all local Spenzy data from this device</small></div><button class="btn danger" onclick="resetAll()">Reset</button></div></div>`}
 function render(){if(activePage==='home')renderHome();if(activePage==='activity')renderActivity();if(activePage==='smart')renderSmart();if(activePage==='calendar')renderCalendar();if(activePage==='account')renderAccount();applyLanguage()}
 function modal(title,body,actions=''){const root=$('#modalRoot');root.innerHTML=`<div class="modal open" id="activeModal" onclick="if(event.target===this)closeModal()"><div class="sheet"><div class="sheet-head"><h2>${title}</h2><button type="button" class="glass-btn" onclick="closeModal()">✕</button></div>${body}${actions}</div></div>`}
 function closeModal(){const r=$('#modalRoot');r.innerHTML='';document.documentElement.classList.remove('in-modal')}
@@ -880,8 +881,206 @@ function toggleTheme(){S.settings.theme=S.settings.theme==='dark'?'light':'dark'
 function resetAll(){if(!confirm('Erase all Spenzy data on this device?'))return;localStorage.removeItem(KEY);S=defaultState();save();render();toast('Data reset')}
 function shiftCal(n){calDate=new Date(calDate.getFullYear(),calDate.getMonth()+n,1);renderCalendar()}function openDay(ds){const tx=S.transactions.filter(t=>t.date===ds),notes=S.notes.filter(n=>n.date===ds);modal(ds,`<div class="list">${tx.length?tx.map(txRow).join(''):''}${notes.map(n=>`<div class="row-item"><div class="row-icon">✎</div><div class="row-copy"><b>${esc(n.text)}</b><small>Note</small></div></div>`).join('')}${!tx.length&&!notes.length?'<div class="empty">Nothing logged on this date.</div>':''}</div><div class="field" style="margin-top:10px"><label>Day marker</label><input id="markerText" value="${esc(S.markers.find(x=>x.date===ds)?.label||'')}" placeholder="Exam, Salary, Trip..."></div>`,`<div class="sheet-actions"><button class="btn primary" onclick="saveMarker('${ds}')">Save marker</button></div>`)}function saveMarker(ds){const t=$('#markerText').value.trim();S.markers=S.markers.filter(x=>x.date!==ds);if(t)S.markers.push({date:ds,label:t});save();closeModal();renderCalendar()}
 function openUniversalSearch(){modal('Search Spenzy',`<div class="field"><input id="uSearch" placeholder="Search transactions, goals, bills, notes..."></div><div id="uResults" class="list" style="margin-top:10px"><div class="empty">Start typing to search your local data.</div></div>`);setTimeout(()=>$('#uSearch').oninput=e=>renderUSearch(e.target.value),30)}function renderUSearch(q){q=q.trim().toLowerCase();const out=$('#uResults');if(!q){out.innerHTML='<div class="empty">Start typing to search your local data.</div>';return}const items=[];S.transactions.filter(x=>JSON.stringify(x).toLowerCase().includes(q)).slice(0,8).forEach(x=>items.push(txRow(x)));S.goals.filter(x=>x.name.toLowerCase().includes(q)).forEach(g=>items.push(`<div class="row-item"><div class="row-icon">◎</div><div class="row-copy"><b>${esc(g.name)}</b><small>Goal</small></div><div class="row-amount">${money(g.current)}</div></div>`));S.notes.filter(x=>x.text.toLowerCase().includes(q)).forEach(n=>items.push(`<div class="row-item"><div class="row-icon">✎</div><div class="row-copy"><b>${esc(n.text)}</b><small>Note · ${n.date}</small></div></div>`));out.innerHTML=items.join('')||'<div class="empty">No results.</div>'}
+
+function openMonthlyReport(monthKey){
+  const nowKey = today().slice(0,7);
+  const curMonth = monthKey || nowKey;
+  const set = new Set([nowKey]);
+  S.transactions.forEach(t=>{if(t.date&&/^\d{4}-\d{2}/.test(t.date))set.add(t.date.slice(0,7))});
+  const availableMonths = [...set].sort((a,b)=>b.localeCompare(a));
+
+  const [yStr,mStr]=curMonth.split('-');
+  const dObj=new Date(+yStr,+mStr-1,1);
+  const monthTitle=dObj.toLocaleDateString([],{month:'long',year:'numeric'});
+
+  const mTx=S.transactions.filter(t=>String(t.date||'').startsWith(curMonth));
+  const inc=mTx.filter(t=>t.type==='income'||t.type==='due-return').reduce((a,t)=>a+(+t.amount||0),0);
+  const exp=mTx.filter(t=>t.type==='expense').reduce((a,t)=>a+(+t.amount||0),0);
+  const net=inc-exp;
+  const savingsRate=inc>0?Math.max(0,Math.round(((inc-exp)/inc)*100)):0;
+
+  const daysInMonth=new Date(+yStr,+mStr,0).getDate();
+  const isCurMonth=curMonth===nowKey;
+  const daysPassed=isCurMonth?Math.min(daysInMonth,new Date().getDate()):daysInMonth;
+  const dailyAvg=daysPassed>0?Math.round(exp/daysPassed):0;
+
+  const budget=+S.profile.budget||0;
+  const budgetPct=budget>0?Math.round(exp/budget*100):0;
+  const budgetRem=budget-exp;
+
+  const cats={};
+  mTx.filter(t=>t.type==='expense').forEach(t=>{const c=t.category||'Other';cats[c]=(cats[c]||0)+(+t.amount||0)});
+  const sortedCats=Object.entries(cats).sort((a,b)=>b[1]-a[1]);
+
+  const wallets={};
+  mTx.filter(t=>t.type==='expense').forEach(t=>{const w=walletName(t.walletId);wallets[w]=(wallets[w]||0)+(+t.amount||0)});
+  const sortedWallets=Object.entries(wallets).sort((a,b)=>b[1]-a[1]);
+
+  const unpaidBills=S.bills.filter(b=>!b.paid).length;
+  const totalBills=S.bills.length;
+
+  const body=`<div style="display:flex;flex-direction:column;gap:12px">
+    <div style="display:flex;align-items:center;justify-content:space-between;gap:8px;padding:8px 12px;background:var(--card2);border:1px solid var(--line);border-radius:16px">
+      <div style="display:flex;align-items:center;gap:6px">
+        <span style="font-size:16px">📅</span>
+        <span style="font-size:11px;font-weight:800;color:var(--muted);text-transform:uppercase">Report Period</span>
+      </div>
+      <select id="reportMonthSelect" onchange="openMonthlyReport(this.value)" style="border:1px solid var(--line);background:var(--card);border-radius:10px;padding:6px 12px;font-size:12px;font-weight:800;outline:none;cursor:pointer">
+        ${availableMonths.map(m=>{
+          const [y,mo]=m.split('-');
+          const lbl=new Date(+y,+mo-1,1).toLocaleDateString([],{month:'short',year:'numeric'});
+          return `<option value="${m}" ${m===curMonth?'selected':''}>${lbl}${m===nowKey?' (Current)':''}</option>`;
+        }).join('')}
+      </select>
+    </div>
+
+    <div style="display:grid;grid-template-columns:1fr 1fr;gap:8px">
+      <div style="padding:12px;border-radius:18px;background:var(--card2);border:1px solid var(--line);display:flex;flex-direction:column;gap:2px">
+        <small style="font-size:9px;font-weight:800;color:var(--muted);text-transform:uppercase">Total Income</small>
+        <b style="font-size:18px;font-weight:900;color:var(--green)">+${money(inc)}</b>
+        <span style="font-size:9px;color:var(--muted)">${mTx.filter(t=>t.type==='income'||t.type==='due-return').length} entries</span>
+      </div>
+      <div style="padding:12px;border-radius:18px;background:var(--card2);border:1px solid var(--line);display:flex;flex-direction:column;gap:2px">
+        <small style="font-size:9px;font-weight:800;color:var(--muted);text-transform:uppercase">Total Expenses</small>
+        <b style="font-size:18px;font-weight:900;color:var(--red)">-${money(exp)}</b>
+        <span style="font-size:9px;color:var(--muted)">${mTx.filter(t=>t.type==='expense').length} entries</span>
+      </div>
+      <div style="padding:12px;border-radius:18px;background:var(--card2);border:1px solid var(--line);display:flex;flex-direction:column;gap:2px">
+        <small style="font-size:9px;font-weight:800;color:var(--muted);text-transform:uppercase">Net Cash Flow</small>
+        <b style="font-size:18px;font-weight:900;color:${net>=0?'var(--green)':'var(--red)'}">${net>=0?'+':''}${money(net)}</b>
+        <span style="font-size:9px;color:var(--muted)">${net>=0?'Monthly Surplus':'Monthly Deficit'}</span>
+      </div>
+      <div style="padding:12px;border-radius:18px;background:var(--card2);border:1px solid var(--line);display:flex;flex-direction:column;gap:2px">
+        <small style="font-size:9px;font-weight:800;color:var(--muted);text-transform:uppercase">Savings Rate</small>
+        <b style="font-size:18px;font-weight:900;color:var(--blue)">${savingsRate}%</b>
+        <span style="font-size:9px;color:var(--muted)">${dailyAvg>0?money(dailyAvg)+'/day avg':'No spend avg'}</span>
+      </div>
+    </div>
+
+    ${budget>0?`
+    <div style="padding:14px;border-radius:18px;background:var(--card2);border:1px solid var(--line)">
+      <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:6px">
+        <b style="font-size:12px">Monthly Budget (${money(budget)})</b>
+        <span style="font-size:11px;font-weight:900;color:${budgetPct>100?'var(--red)':budgetPct>80?'var(--amber)':'var(--green)'}">${budgetPct}% used</span>
+      </div>
+      <div class="mini-progress" style="height:7px;margin-top:0">
+        <i style="width:${Math.min(100,budgetPct)}%;background:${budgetPct>100?'var(--red)':budgetPct>80?'var(--amber)':'var(--green)'}"></i>
+      </div>
+      <div style="display:flex;justify-content:space-between;font-size:10px;color:var(--muted);margin-top:6px">
+        <span>Spent: ${money(exp)}</span>
+        <span>${budgetRem>=0?money(budgetRem)+' remaining':money(Math.abs(budgetRem))+' over budget!'}</span>
+      </div>
+    </div>
+    `:''}
+
+    <div style="padding:14px;border-radius:18px;background:var(--card2);border:1px solid var(--line)">
+      <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:10px">
+        <b style="font-size:12px">Spending by Category</b>
+        <span style="font-size:10px;color:var(--muted)">${sortedCats.length} categories</span>
+      </div>
+      ${sortedCats.length?`
+        <div style="display:grid;gap:10px">
+          ${sortedCats.map(([cat,amt])=>{
+            const pct=exp>0?Math.round(amt/exp*100):0;
+            const icon=(CATEGORIES.expense||[]).find(c=>c.name.toLowerCase()===cat.toLowerCase())?.icon||'🏷️';
+            return `<div>
+              <div style="display:flex;align-items:center;justify-content:space-between;font-size:11px;margin-bottom:3px">
+                <span style="display:flex;align-items:center;gap:6px"><span>${icon}</span><b>${esc(cat)}</b> <small style="color:var(--muted);font-size:9px">(${pct}%)</small></span>
+                <b style="font-weight:900">${money(amt)}</b>
+              </div>
+              <div class="mini-progress" style="height:5px;margin-top:0">
+                <i style="width:${pct}%;background:linear-gradient(90deg,#ff685f,#ed5047)"></i>
+              </div>
+            </div>`;
+          }).join('')}
+        </div>
+      `:'<div class="empty" style="padding:8px 0">No expenses recorded for this month.</div>'}
+    </div>
+
+    ${sortedWallets.length?`
+    <div style="padding:14px;border-radius:18px;background:var(--card2);border:1px solid var(--line)">
+      <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:8px">
+        <b style="font-size:12px">Payment Sources</b>
+        <span style="font-size:10px;color:var(--muted)">Outflow by wallet</span>
+      </div>
+      <div style="display:flex;flex-wrap:wrap;gap:6px">
+        ${sortedWallets.map(([w,amt])=>`<span class="chip" style="font-size:10px"><b>${esc(w)}</b>: ${money(amt)}</span>`).join('')}
+      </div>
+    </div>
+    `:''}
+
+    ${totalBills>0?`
+    <div style="padding:12px 14px;border-radius:18px;background:var(--card2);border:1px solid var(--line);display:flex;align-items:center;justify-content:space-between">
+      <div>
+        <b style="font-size:12px">Bills Status</b>
+        <small style="display:block;color:var(--muted);font-size:9px">${unpaidBills?unpaidBills+' unpaid bill(s) pending':'All registered bills paid'}</small>
+      </div>
+      <button class="btn" onclick="closeModal();openBills()">Manage</button>
+    </div>
+    `:''}
+  </div>`;
+
+  modal(`Report: ${monthTitle}`, body, `<div class="sheet-actions"><button type="button" class="btn primary" onclick="copyMonthlyReportSummary('${curMonth}')">📋 Copy Summary</button><button type="button" class="btn" onclick="closeModal()">Close</button></div>`);
+}
+
+function copyMonthlyReportSummary(m){
+  const [yStr,mStr]=m.split('-');
+  const dObj=new Date(+yStr,+mStr-1,1);
+  const mName=dObj.toLocaleDateString([],{month:'long',year:'numeric'});
+  const mTx=S.transactions.filter(x=>String(x.date||'').startsWith(m));
+  const inc=mTx.filter(x=>x.type==='income'||x.type==='due-return').reduce((a,x)=>a+(+x.amount||0),0);
+  const exp=mTx.filter(x=>x.type==='expense').reduce((a,x)=>a+(+x.amount||0),0);
+  const net=inc-exp;
+  const daysInMonth=new Date(+yStr,+mStr,0).getDate();
+  const isCur=m===today().slice(0,7);
+  const daysPassed=isCur?Math.min(daysInMonth,new Date().getDate()):daysInMonth;
+  const dailyAvg=daysPassed>0?Math.round(exp/daysPassed):0;
+  const budget=+S.profile.budget||0;
+  const cats={};
+  mTx.filter(x=>x.type==='expense').forEach(x=>{cats[x.category||'Other']=(cats[x.category||'Other']||0)+(+x.amount||0)});
+  const topCats=Object.entries(cats).sort((a,b)=>b[1]-a[1]).slice(0,5);
+
+  let txt=`📊 Spenzy Monthly Financial Report — ${mName}\n`+
+    `━━━━━━━━━━━━━━━━━━━━━━━━━━\n`+
+    `💰 Total Income: ${money(inc)}\n`+
+    `💸 Total Expenses: ${money(exp)}\n`+
+    `📈 Net Cash Flow: ${(net>=0?'+':'')+money(net)}\n`+
+    (inc>0?`📉 Savings Rate: ${Math.max(0,Math.round((net/inc)*100))}%\n`:'')+
+    (exp>0?`📅 Daily Average: ${money(dailyAvg)}/day\n`:'')+
+    (budget>0?`🎯 Budget: ${Math.round(exp/budget*100)}% used (${budget>=exp?money(budget-exp)+' left':money(exp-budget)+' over'})\n`:'')+
+    `📝 Total Transactions: ${mTx.length}\n`;
+
+  if(topCats.length){
+    txt+=`\n🏷️ Top Expense Categories:\n`+
+      topCats.map(([c,v])=>`• ${c}: ${money(v)} (${exp?Math.round(v/exp*100):0}%)`).join('\n')+'\n';
+  }
+  txt+=`\nGenerated offline by Spenzy App`;
+
+  if(navigator.clipboard&&navigator.clipboard.writeText){
+    navigator.clipboard.writeText(txt).then(()=>toast('Report summary copied! 📋')).catch(()=>fallbackCopy(txt));
+  } else {
+    fallbackCopy(txt);
+  }
+}
+
+function fallbackCopy(text){
+  try{
+    const ta=document.createElement('textarea');
+    ta.value=text;
+    ta.style.position='fixed';
+    ta.style.opacity='0';
+    document.body.appendChild(ta);
+    ta.select();
+    document.execCommand('copy');
+    ta.remove();
+    toast('Report summary copied! 📋');
+  }catch{
+    toast('Could not copy report');
+  }
+}
+
 // Expose handlers used by inline UI
-Object.assign(window,{updateAiDetectionUI,testAI,setPage,setActivityFilter,openMoney,openWallets,openBills,openGoals,openDues,prefillDue,openRoutines,openReceipt,openHabits,quickDaily,openFocus,openSleep,openPrayer,openScreen,openRemember,openWishlist,openNote,openRecurring,openAI,toggleTheme,toast,renderActivity,saveMoney,addWallet,deleteWallet,addBill,toggleBill,deleteBill,addGoal,contributeGoal,deleteGoal,addDue,settleDue,reopenDue,deleteDue,addRoutine,runRoutine,deleteRoutine,addHabit,toggleHabit,deleteHabit,setFocus,toggleFocus,logFocusNow,saveSleep,togglePrayer,saveScreen,addReminder,toggleReminder,deleteReminder,addWish,toggleWish,deleteWish,saveNote,addRecurring,deleteRecurring,previewReceipt,analyzeReceipt,applyBudgets,showAnomalies,showInvestment,toggleRoundup,openProfile,saveProfile,openAISettings,saveAISettings,sendAI,openBackup,exportJSON,exportCSV,importJSON,importCSV,toggleLanguage,resetAll,shiftCal,openDay,saveMarker,openUniversalSearch,closeModal,logLearned,primaryWalletId,totalWallets,walletBalance,getS:()=>S,triggerScanReceipt,processScannedReceipt,parseReceiptText,confirmFastReceipt,selectCategory,highlightMatchingChip,evalMathExpression,onAmountInput,resolveAmountCalc,appendMath,CATEGORIES,getCategoriesForType});
+Object.assign(window,{openMonthlyReport,copyMonthlyReportSummary,fallbackCopy,updateAiDetectionUI,testAI,setPage,setActivityFilter,openMoney,openWallets,openBills,openGoals,openDues,prefillDue,openRoutines,openReceipt,openHabits,quickDaily,openFocus,openSleep,openPrayer,openScreen,openRemember,openWishlist,openNote,openRecurring,openAI,toggleTheme,toast,renderActivity,saveMoney,addWallet,deleteWallet,addBill,toggleBill,deleteBill,addGoal,contributeGoal,deleteGoal,addDue,settleDue,reopenDue,deleteDue,addRoutine,runRoutine,deleteRoutine,addHabit,toggleHabit,deleteHabit,setFocus,toggleFocus,logFocusNow,saveSleep,togglePrayer,saveScreen,addReminder,toggleReminder,deleteReminder,addWish,toggleWish,deleteWish,saveNote,addRecurring,deleteRecurring,previewReceipt,analyzeReceipt,applyBudgets,showAnomalies,showInvestment,toggleRoundup,openProfile,saveProfile,openAISettings,saveAISettings,sendAI,openBackup,exportJSON,exportCSV,importJSON,importCSV,toggleLanguage,resetAll,shiftCal,openDay,saveMarker,openUniversalSearch,closeModal,logLearned,primaryWalletId,totalWallets,walletBalance,getS:()=>S,triggerScanReceipt,processScannedReceipt,parseReceiptText,confirmFastReceipt,selectCategory,highlightMatchingChip,evalMathExpression,onAmountInput,resolveAmountCalc,appendMath,CATEGORIES,getCategoriesForType});
 
 // Keep mobile WebView layout completely stable when the virtual keyboard opens/closes
 document.addEventListener('focusin',e=>{if(e.target&&e.target.matches('input,textarea,select')){document.documentElement.classList.add('keyboard-open');if(e.target.closest('.modal'))document.documentElement.classList.add('in-modal')}},{passive:true});

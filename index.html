@@ -143,7 +143,16 @@ $$('.bottomnav button').forEach(b=>b.onclick=()=>setPage(b.dataset.page));
 function renderHome(){
   const name=firstName(),spent=monthExpenses(),inc=monthSum('income'),saved=monthSum('saving')+monthSum('goal')+S.roundupSaved,available=totalWallets();
   const unpaidBills=S.bills.filter(b=>!b.paid).length;
-  const openDuesCount=S.dues.filter(d=>d.status==='open').length;
+  const openDues=S.dues.filter(d=>d.status==='open');
+  const openDuesCount=openDues.length;
+  const borrowedOpen=openDues.filter(d=>d.kind==='borrowed');
+  const lentOpen=openDues.filter(d=>d.kind==='lent');
+  const totalBorrowed=borrowedOpen.reduce((a,d)=>a+(+d.amount||0),0);
+  const totalLent=lentOpen.reduce((a,d)=>a+(+d.amount||0),0);
+
+  const pendingReminders=S.reminders.filter(r=>!r.done);
+  const doneReminders=S.reminders.filter(r=>r.done);
+
   const d=S.daily[today()]||{};
   const habits=S.habits.length,habitDone=S.habits.filter(h=>d.habits?.[h.id]).length;
   const water=+d.water||0,focus=+d.focus||0;
@@ -187,6 +196,7 @@ function renderHome(){
 
     <div class="quick-tools-row">
       <div class="qtool-btn" onclick="openMonthlyReport()" style="border-color:rgba(16,185,129,.4);color:var(--green);font-weight:900"><span>📊</span>Report</div>
+      <div class="qtool-btn" onclick="openRemember()" style="border-color:rgba(245,158,11,.4);color:var(--amber);font-weight:900"><span>🔔</span>Reminders (${pendingReminders.length})</div>
       <div class="qtool-btn" onclick="triggerScanReceipt()" style="border-color:rgba(237,80,71,.4);color:var(--red);font-weight:900"><span>📷</span>Scan Bill</div>
       <div class="qtool-btn" onclick="openWishlist()"><span>♡</span>Wishlist (${S.wishlist.filter(w=>!w.bought).length})</div>
       <div class="qtool-btn" onclick="openGoals()"><span>◎</span>Goals (${S.goals.length})</div>
@@ -206,6 +216,68 @@ function renderHome(){
       <div class="today-card glass" onclick="openFocus()"><div class="today-card-head"><h3>Focus</h3><span>◷</span></div><div class="big">${focus}m</div><small>Deep work session</small><div class="mini-progress"><i style="width:${Math.min(100,focus/120*100)}%"></i></div></div>
       <div class="today-card glass" onclick="openGoals()"><div class="today-card-head"><h3>Goals</h3><span>◎</span></div><div class="big">${S.goals.length}</div><small>${S.goals.length?money(totalGoalSaved())+' saved':'Tap to add goal'}</small><div class="mini-progress"><i style="width:${goalOverallPct()}%"></i></div></div>
     </div></div>
+
+    <!-- DUES & DEBTS SECTION -->
+    <div class="section">
+      <div class="section-head">
+        <h2>Dues & Debts</h2>
+        <span onclick="openDues()" style="color:var(--red);font-weight:800;cursor:pointer">Manage all (${openDuesCount}) ›</span>
+      </div>
+      <div class="glass list-card">
+        <div style="display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-bottom:10px">
+          <div style="padding:10px 12px;border-radius:16px;background:var(--card2);border:1px solid var(--line);cursor:pointer" onclick="openDues('borrowed')">
+            <small style="font-size:9px;font-weight:800;color:var(--red);text-transform:uppercase">You Owe (Debt)</small>
+            <b style="font-size:16px;font-weight:900;display:block;margin-top:2px;color:var(--red)">${money(totalBorrowed)}</b>
+            <span style="font-size:9px;color:var(--muted)">${borrowedOpen.length} pending</span>
+          </div>
+          <div style="padding:10px 12px;border-radius:16px;background:var(--card2);border:1px solid var(--line);cursor:pointer" onclick="openDues('lent')">
+            <small style="font-size:9px;font-weight:800;color:var(--green);text-transform:uppercase">Owed to You (Lent)</small>
+            <b style="font-size:16px;font-weight:900;display:block;margin-top:2px;color:var(--green)">${money(totalLent)}</b>
+            <span style="font-size:9px;color:var(--muted)">${lentOpen.length} pending</span>
+          </div>
+        </div>
+        <div class="list">
+          ${openDues.length ? openDues.slice(0, 3).map(d => `
+            <div class="row-item" style="padding:9px 12px">
+              <div class="row-icon" style="width:34px;height:34px;font-size:13px;background:${d.kind==='borrowed'?'rgba(237,80,71,.12)':'rgba(16,185,129,.12)'};color:${d.kind==='borrowed'?'var(--red)':'var(--green)'}">↔</div>
+              <div class="row-copy">
+                <b style="font-size:13px">${esc(d.person)}</b>
+                <small>${d.kind==='borrowed'?'You owe':'Owed to you'}${d.due ? ' · Due ' + esc(d.due) : ''}</small>
+              </div>
+              <div class="row-amount ${d.kind==='borrowed'?'negative':'positive'}" style="font-size:13px">${money(d.amount)}</div>
+              <button type="button" class="btn green" style="padding:6px 11px;font-size:10px;font-weight:900" onclick="settleDue('${d.id}')">${d.kind==='borrowed'?'Pay':'Got'}</button>
+            </div>
+          `).join('') : '<div class="empty" style="padding:10px 0">No pending dues or debts. You are all clear!</div>'}
+        </div>
+        <button type="button" class="btn full" style="margin-top:10px;font-size:11px;font-weight:800" onclick="openDues()">＋ Add New Due / Debt</button>
+      </div>
+    </div>
+
+    <!-- REMINDERS SECTION -->
+    <div class="section">
+      <div class="section-head">
+        <h2>Reminders & Tasks</h2>
+        <span onclick="openRemember()" style="color:var(--red);font-weight:800;cursor:pointer">View all (${S.reminders.length}) ›</span>
+      </div>
+      <div class="glass list-card">
+        <div class="list">
+          ${pendingReminders.length ? pendingReminders.slice(0, 4).map(r => `
+            <div class="row-item" style="padding:9px 12px">
+              <button type="button" class="glass-btn" style="width:30px;height:30px;border-radius:10px;font-size:13px;flex-shrink:0" onclick="toggleReminder('${r.id}')" title="Check off reminder">○</button>
+              <div class="row-copy">
+                <b style="font-size:13px">${esc(r.text)}</b>
+                <small>${r.date ? esc(r.date) : 'Pending reminder'}</small>
+              </div>
+              <button type="button" class="btn danger" style="padding:5px 9px;font-size:11px" onclick="deleteReminder('${r.id}')">×</button>
+            </div>
+          `).join('') : (doneReminders.length ? '<div class="empty" style="padding:8px 0">All reminders completed! ✓</div>' : '<div class="empty" style="padding:8px 0">No reminders yet. Type one below to remember anything!</div>')}
+        </div>
+        <div style="display:flex;gap:8px;margin-top:10px">
+          <input id="dashRemInput" placeholder="Quick reminder (e.g. Pay Wi-Fi, Call Mom)..." style="flex:1;border:1px solid var(--line);background:var(--card);border-radius:14px;padding:9px 12px;font-size:12px;outline:none" onkeydown="if(event.key==='Enter'){quickAddReminder();event.preventDefault()}">
+          <button type="button" class="btn primary" style="padding:9px 14px;font-size:11px" onclick="quickAddReminder()">＋ Add</button>
+        </div>
+      </div>
+    </div>
 
     <div class="section"><div class="insight glass"><small style="color:var(--primary);font-weight:800">SPENZY SMART</small><h3>${esc(insight.title)}</h3><p>${esc(insight.text)}</p></div></div>
 
@@ -559,9 +631,9 @@ function openDues(tab='borrowed'){
   `,`<div class="sheet-actions"><button class="btn primary" onclick="addDue('${duesTab}')">＋ Save ${duesTab==='borrowed'?'debt':'due'}</button></div>`)}
 function prefillDue(k){openDues(k)}
 function addDue(kindOverride){const k=kindOverride||duesTab||'borrowed',a=+$('#dAmount').value,p=$('#dPerson').value.trim(),w=$('#dWallet')?.value||primaryWalletId();if(!p||!(a>0))return toast('Enter person name and amount');const dId=uid(),dueObj={id:dId,kind:k,person:p,amount:a,due:$('#dDate').value,walletId:w,status:'open'};if(k==='lent'){const initTxId=uid();dueObj.initTxId=initTxId;S.transactions.push({id:initTxId,type:'lent',amount:a,date:today(),category:'I Lent',walletId:w,note:`Lent to ${p}`,createdAt:new Date().toISOString()})}S.dues.push(dueObj);save();openDues(k);render();toast(k==='lent'?`Lent ${money(a)} recorded`:`Debt of ${money(a)} recorded as unpaid`)}
-function settleDue(id){const d=S.dues.find(x=>x.id===id);if(!d)return;const wid=d.walletId||primaryWalletId();d.walletId=wid;if(d.kind==='borrowed'){d.status='paid';const txId=uid();d.settleTxId=txId;S.transactions.push({id:txId,type:'expense',amount:d.amount,date:today(),category:'Due Paid',walletId:wid,note:`Repaid debt to ${d.person}`,createdAt:new Date().toISOString()});toast(`Debt repaid: ${money(d.amount)} deducted from balance`)}else{d.status='received';const txId=uid();d.settleTxId=txId;S.transactions.push({id:txId,type:'due-return',amount:d.amount,date:today(),category:'Received due',walletId:wid,note:`Received from ${d.person}`,createdAt:new Date().toISOString()});toast(`Due received: ${money(d.amount)} added to balance`)}save();openDues(duesTab);render()}
-function reopenDue(id){const d=S.dues.find(x=>x.id===id);if(!d)return;if(d.settleTxId){S.transactions=S.transactions.filter(t=>t.id!==d.settleTxId);delete d.settleTxId}d.status='open';save();openDues(duesTab);render();toast('Reopened as unpaid')}
-function deleteDue(id){const d=S.dues.find(x=>x.id===id);if(!d||!confirm(`Delete due with ${d.person}?`))return;if(d.initTxId)S.transactions=S.transactions.filter(t=>t.id!==d.initTxId);if(d.settleTxId)S.transactions=S.transactions.filter(t=>t.id!==d.settleTxId);S.dues=S.dues.filter(x=>x.id!==id);save();openDues(duesTab);render();toast('Due deleted')}
+function settleDue(id){const d=S.dues.find(x=>x.id===id);if(!d)return;const wid=d.walletId||primaryWalletId();d.walletId=wid;if(d.kind==='borrowed'){d.status='paid';const txId=uid();d.settleTxId=txId;S.transactions.push({id:txId,type:'expense',amount:d.amount,date:today(),category:'Due Paid',walletId:wid,note:`Repaid debt to ${d.person}`,createdAt:new Date().toISOString()});toast(`Debt repaid: ${money(d.amount)} deducted from balance`)}else{d.status='received';const txId=uid();d.settleTxId=txId;S.transactions.push({id:txId,type:'due-return',amount:d.amount,date:today(),category:'Received due',walletId:wid,note:`Received from ${d.person}`,createdAt:new Date().toISOString()});toast(`Due received: ${money(d.amount)} added to balance`)}save();if($('#activeModal')?.querySelector('#dPerson'))openDues(duesTab);render()}
+function reopenDue(id){const d=S.dues.find(x=>x.id===id);if(!d)return;if(d.settleTxId){S.transactions=S.transactions.filter(t=>t.id!==d.settleTxId);delete d.settleTxId}d.status='open';save();if($('#activeModal')?.querySelector('#dPerson'))openDues(duesTab);render();toast('Reopened as unpaid')}
+function deleteDue(id){const d=S.dues.find(x=>x.id===id);if(!d||!confirm(`Delete due with ${d.person}?`))return;if(d.initTxId)S.transactions=S.transactions.filter(t=>t.id!==d.initTxId);if(d.settleTxId)S.transactions=S.transactions.filter(t=>t.id!==d.settleTxId);S.dues=S.dues.filter(x=>x.id!==id);save();if($('#activeModal')?.querySelector('#dPerson'))openDues(duesTab);render();toast('Due deleted')}
 function openRoutines(){modal('One-tap routines',`<div class="list">${S.routines.length?S.routines.map(r=>`<div class="row-item"><div class="row-icon">✓</div><div class="row-copy"><b>${esc(r.name)}</b><small>${money(r.amount)} · ${esc(r.category)}</small></div><button class="btn green" onclick="runRoutine('${r.id}')">Log</button><button class="btn danger" onclick="deleteRoutine('${r.id}')">×</button></div>`).join(''):'<div class="empty">Create quick routines like Office lunch or University transport.</div>'}</div><div class="form two" style="margin-top:12px"><div class="field"><label>Name</label><input id="rName" placeholder="Office lunch"></div><div class="field"><label>Amount</label><input id="rAmount" type="number"></div><div class="field"><label>Category</label><input id="rCategory" placeholder="Food"></div><div class="field"><label>Wallet</label><select id="rWallet">${walletOptions()}</select></div></div>`,`<div class="sheet-actions"><button class="btn primary" onclick="addRoutine()">Add routine</button></div>`)}
 function addRoutine(){const n=$('#rName').value.trim(),a=+$('#rAmount').value;if(!n||!(a>0))return toast('Add routine details');S.routines.push({id:uid(),name:n,amount:a,category:$('#rCategory').value.trim()||'Routine',walletId:$('#rWallet').value});save();openRoutines()}function runRoutine(id){const r=S.routines.find(x=>x.id===id);if(!r)return;if(!confirm(`Log ${r.name} for ${money(r.amount)}?`))return;const wid=r.walletId||primaryWalletId();S.transactions.push({id:uid(),type:'expense',amount:r.amount,date:today(),category:r.category,walletId:wid,note:r.name,createdAt:new Date().toISOString()});save();closeModal();render();toast('Routine logged')}function deleteRoutine(id){S.routines=S.routines.filter(x=>x.id!==id);save();openRoutines()}
 function openHabits(){const d=S.daily[today()]||{};modal('Habits',`<div class="list">${S.habits.length?S.habits.map(h=>`<div class="row-item"><div class="row-icon">${d.habits?.[h.id]?'✓':'○'}</div><div class="row-copy"><b>${esc(h.name)}</b><small>${d.habits?.[h.id]?'Done today':'Tap to complete'}</small></div><button class="btn ${d.habits?.[h.id]?'green':''}" onclick="toggleHabit('${h.id}')">${d.habits?.[h.id]?'Done':'Check'}</button><button class="btn danger" onclick="deleteHabit('${h.id}')">×</button></div>`).join(''):'<div class="empty">No habits yet.</div>'}</div><div class="field" style="margin-top:12px"><label>New habit</label><input id="hName" placeholder="Read 20 minutes"></div>`,`<div class="sheet-actions"><button class="btn primary" onclick="addHabit()">Add habit</button></div>`)}
@@ -573,8 +645,11 @@ function openPrayer(){const d=S.daily[today()]||{},p=d.prayers||{};const names=[
 
 function openScreen(){const d=S.daily[today()]||{};modal('Screen time',`<div class="field"><label>Screen time today (hours)</label><input id="screenHours" type="number" step="0.1" inputmode="decimal" value="${d.screen||''}" placeholder="0"></div>`,`<div class="sheet-actions"><button class="btn primary" onclick="saveScreen()">Save screen time</button></div>`)}
 function saveScreen(){S.daily[today()]||={};S.daily[today()].screen=+$('#screenHours').value||0;save();closeModal();render();toast('Screen time saved')}
-function openRemember(){modal('Remember',`<div class="list">${S.reminders.length?S.reminders.map(r=>`<div class="row-item"><div class="row-icon">${r.done?'✓':'!'}</div><div class="row-copy"><b style="${r.done?'text-decoration:line-through;opacity:.6':''}">${esc(r.text)}</b><small>${r.done?'Completed':'Keep in mind'}</small></div><button class="btn" onclick="toggleReminder('${r.id}')">${r.done?'↺':'✓'}</button><button class="btn danger" onclick="deleteReminder('${r.id}')">×</button></div>`).join(''):'<div class="empty">Nothing to remember yet.</div>'}</div><div class="field" style="margin-top:12px"><label>Add reminder</label><input id="remText" placeholder="Something important..."></div>`,`<div class="sheet-actions"><button class="btn primary" onclick="addReminder()">Add reminder</button></div>`)}
-function addReminder(){const t=$('#remText').value.trim();if(!t)return;S.reminders.push({id:uid(),text:t,done:false,date:today()});save();openRemember()}function toggleReminder(id){const r=S.reminders.find(x=>x.id===id);if(r)r.done=!r.done;save();openRemember();render()}function deleteReminder(id){S.reminders=S.reminders.filter(x=>x.id!==id);save();openRemember()}
+function openRemember(){modal('Reminders & Tasks',`<div class="field" style="margin-bottom:12px"><div style="display:flex;gap:8px"><input id="remText" placeholder="Add something to remember..." style="flex:1" onkeydown="if(event.key==='Enter'){addReminder();event.preventDefault()}"><button type="button" class="btn primary" onclick="addReminder()" style="padding:10px 16px">＋ Add</button></div></div><div class="list">${S.reminders.length?S.reminders.map(r=>`<div class="row-item" style="padding:10px 12px"><button type="button" class="glass-btn" style="width:32px;height:32px;border-radius:10px;font-size:14px;flex-shrink:0" onclick="toggleReminder('${r.id}')" title="Check off">${r.done?'✓':'○'}</button><div class="row-copy"><b style="${r.done?'text-decoration:line-through;color:var(--muted)':''}">${esc(r.text)}</b><small>${r.date?esc(r.date):''} · <span style="color:${r.done?'var(--green)':'var(--amber)'}">${r.done?'Completed':'Pending'}</span></small></div><button type="button" class="btn danger" onclick="deleteReminder('${r.id}')">×</button></div>`).join(''):'<div class="empty">Nothing to remember yet. Add a reminder above.</div>'}</div>`,`<div class="sheet-actions"><button type="button" class="btn" onclick="closeModal()">Close</button></div>`)}
+function addReminder(){const t=$('#remText')?.value.trim();if(!t)return;S.reminders.unshift({id:uid(),text:t,done:false,date:today()});save();openRemember();render();toast('Reminder added')}
+function quickAddReminder(){const input=$('#dashRemInput');const t=input?.value.trim();if(!t)return toast('Type a reminder first');S.reminders.unshift({id:uid(),text:t,done:false,date:today()});save();render();toast('Reminder saved! 🔔')}
+function toggleReminder(id){const r=S.reminders.find(x=>x.id===id);if(r)r.done=!r.done;save();if($('#activeModal')?.querySelector('#remText'))openRemember();render();toast(r?.done?'Reminder completed ✓':'Reminder active')}
+function deleteReminder(id){S.reminders=S.reminders.filter(x=>x.id!==id);save();if($('#activeModal')?.querySelector('#remText'))openRemember();render();toast('Reminder deleted')}
 let wishTab='planned';
 function openWishlist(tab='planned'){
   wishTab=tab;
@@ -1088,7 +1163,7 @@ function fallbackCopy(text){
 }
 
 // Expose handlers used by inline UI
-Object.assign(window,{openMonthlyReport,copyMonthlyReportSummary,fallbackCopy,updateAiDetectionUI,testAI,setPage,setActivityFilter,openMoney,openWallets,openBills,openGoals,openDues,prefillDue,openRoutines,openReceipt,openHabits,quickDaily,openFocus,openSleep,openPrayer,openScreen,openRemember,openWishlist,openNote,openRecurring,openAI,toggleTheme,toast,renderActivity,saveMoney,addWallet,deleteWallet,addBill,toggleBill,deleteBill,addGoal,contributeGoal,deleteGoal,addDue,settleDue,reopenDue,deleteDue,addRoutine,runRoutine,deleteRoutine,addHabit,toggleHabit,deleteHabit,setFocus,toggleFocus,logFocusNow,saveSleep,togglePrayer,saveScreen,addReminder,toggleReminder,deleteReminder,addWish,toggleWish,deleteWish,saveNote,addRecurring,deleteRecurring,previewReceipt,analyzeReceipt,applyBudgets,showAnomalies,showInvestment,toggleRoundup,openProfile,saveProfile,openAISettings,saveAISettings,sendAI,openBackup,exportJSON,exportCSV,importJSON,importCSV,toggleLanguage,resetAll,shiftCal,openDay,saveMarker,openUniversalSearch,closeModal,logLearned,primaryWalletId,totalWallets,walletBalance,getS:()=>S,triggerScanReceipt,processScannedReceipt,parseReceiptText,confirmFastReceipt,selectCategory,highlightMatchingChip,evalMathExpression,onAmountInput,resolveAmountCalc,appendMath,CATEGORIES,getCategoriesForType});
+Object.assign(window,{quickAddReminder,openMonthlyReport,copyMonthlyReportSummary,fallbackCopy,updateAiDetectionUI,testAI,setPage,setActivityFilter,openMoney,openWallets,openBills,openGoals,openDues,prefillDue,openRoutines,openReceipt,openHabits,quickDaily,openFocus,openSleep,openPrayer,openScreen,openRemember,openWishlist,openNote,openRecurring,openAI,toggleTheme,toast,renderActivity,saveMoney,addWallet,deleteWallet,addBill,toggleBill,deleteBill,addGoal,contributeGoal,deleteGoal,addDue,settleDue,reopenDue,deleteDue,addRoutine,runRoutine,deleteRoutine,addHabit,toggleHabit,deleteHabit,setFocus,toggleFocus,logFocusNow,saveSleep,togglePrayer,saveScreen,addReminder,toggleReminder,deleteReminder,addWish,toggleWish,deleteWish,saveNote,addRecurring,deleteRecurring,previewReceipt,analyzeReceipt,applyBudgets,showAnomalies,showInvestment,toggleRoundup,openProfile,saveProfile,openAISettings,saveAISettings,sendAI,openBackup,exportJSON,exportCSV,importJSON,importCSV,toggleLanguage,resetAll,shiftCal,openDay,saveMarker,openUniversalSearch,closeModal,logLearned,primaryWalletId,totalWallets,walletBalance,getS:()=>S,triggerScanReceipt,processScannedReceipt,parseReceiptText,confirmFastReceipt,selectCategory,highlightMatchingChip,evalMathExpression,onAmountInput,resolveAmountCalc,appendMath,CATEGORIES,getCategoriesForType});
 
 // Keep mobile WebView layout completely stable when the virtual keyboard opens/closes
 document.addEventListener('focusin',e=>{if(e.target&&e.target.matches('input,textarea,select')){document.documentElement.classList.add('keyboard-open');if(e.target.closest('.modal')){document.documentElement.classList.add('in-modal');window.scrollTo(0,0)}}},{passive:true});
